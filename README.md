@@ -1,0 +1,1 @@
+# HUCE_DesignPattern
