@@ -1,0 +1,14 @@
+# OCOP Traceability System - Backend
+# Requirements file
+# TODO: Add dependencies
+# fastapi
+# uvicorn
+# sqlalchemy
+# motor
+# redis
+# paho-mqtt
+# web3
+# pydantic-settings
+# python-jose
+# passlib
+# qrcode
