@@ -1,2 +1,8 @@
-# app/application/dto/blockchain_dto.py
-# DTOs: BlockchainWriteRequest, BlockchainVerifyResponse
+from pydantic import BaseModel
+
+
+class BlockchainVerificationResponse(BaseModel):
+    batch_id: str
+    current_hash: str
+    blockchain_hash: str | None
+    is_valid: bool

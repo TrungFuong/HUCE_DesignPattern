@@ -1,2 +1,12 @@
-# app/domain/interfaces/services/mqtt_client.py
-# Abstract: MqttClient (subscribe, publish)
+from abc import ABC, abstractmethod
+
+
+class MqttClient(ABC):
+
+    @abstractmethod
+    async def connect(self) -> None:
+        pass
+
+    @abstractmethod
+    async def subscribe(self, topic: str, callback) -> None:
+        pass

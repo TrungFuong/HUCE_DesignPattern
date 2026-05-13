@@ -1,3 +1,10 @@
-# app/domain/rules/temperature_risk_strategy.py
-# Concrete: TemperatureRiskStrategy - kiểm tra nhiệt độ vượt ngưỡng
-# Pattern: Strategy
+from app.domain.rules.risk_strategy import RiskStrategy
+
+
+class TemperatureRiskStrategy(RiskStrategy):
+
+    def evaluate(self, sensor_log, rule) -> bool:
+        return (
+            sensor_log.temperature < rule.min_temperature
+            or sensor_log.temperature > rule.max_temperature
+        )

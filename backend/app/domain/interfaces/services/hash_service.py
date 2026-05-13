@@ -1,2 +1,8 @@
-# app/domain/interfaces/services/hash_service.py
-# Abstract: HashService (hash_data, hash_batch_data)
+from abc import ABC, abstractmethod
+
+
+class HashService(ABC):
+
+    @abstractmethod
+    def hash_data(self, data: dict) -> str:
+        pass

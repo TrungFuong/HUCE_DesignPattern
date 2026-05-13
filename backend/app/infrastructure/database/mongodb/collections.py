@@ -1,2 +1,2 @@
-# app/infrastructure/database/mongodb/collections.py
-# MongoDB collection names constants
+SENSOR_LOGS = "sensor_logs"
+BLOCKCHAIN_RECORDS = "blockchain_records"

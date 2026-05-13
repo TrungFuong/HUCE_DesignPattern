@@ -1,2 +1,3 @@
-# app/main.py
-# FastAPI application entry point
+from app.presentation.api.router import create_app
+
+app = create_app()

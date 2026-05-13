@@ -1,2 +1,9 @@
-# app/domain/entities/container.py
-# Entity: Container (id, code, type, description)
+from dataclasses import dataclass
+
+
+@dataclass
+class Container:
+    id: str
+    code: str
+    type: str
+    description: str | None = None

@@ -1,2 +1,6 @@
-# app/domain/enums/risk_level.py
-# Enum: RiskLevel (NORMAL, AT_RISK, CRITICAL)
+from enum import Enum
+
+
+class RiskLevel(str, Enum):
+    NORMAL = "NORMAL"
+    AT_RISK = "AT_RISK"

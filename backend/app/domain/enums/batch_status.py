@@ -1,2 +1,8 @@
-# app/domain/enums/batch_status.py
-# Enum: BatchStatus (CREATED, IN_TRANSIT, DELIVERED, REJECTED)
+from enum import Enum
+
+
+class BatchStatus(str, Enum):
+    CREATED = "CREATED"
+    IN_TRANSIT = "IN_TRANSIT"
+    DELIVERED = "DELIVERED"
+    CLOSED = "CLOSED"

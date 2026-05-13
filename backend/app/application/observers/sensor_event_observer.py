@@ -1,3 +1,8 @@
-# app/application/observers/sensor_event_observer.py
-# Abstract: SensorEventObserver (update)
-# Pattern: Observer
+from abc import ABC, abstractmethod
+
+
+class SensorEventObserver(ABC):
+
+    @abstractmethod
+    async def update(self, sensor_log):
+        pass

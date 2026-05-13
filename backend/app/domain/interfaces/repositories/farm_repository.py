@@ -1,2 +1,14 @@
-# app/domain/interfaces/repositories/farm_repository.py
-# Abstract: FarmRepository (find_by_id, find_by_owner_id, save, update)
+from abc import ABC, abstractmethod
+
+from app.domain.entities.farm import Farm
+
+
+class FarmRepository(ABC):
+
+    @abstractmethod
+    async def find_by_id(self, farm_id: str) -> Farm | None:
+        pass
+
+    @abstractmethod
+    async def save(self, farm: Farm) -> Farm:
+        pass

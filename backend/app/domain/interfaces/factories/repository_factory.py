@@ -1,3 +1,12 @@
-# app/domain/interfaces/factories/repository_factory.py
-# Abstract: RepositoryFactory (create_batch_repository, create_sensor_log_repository, ...)
-# Pattern: Factory Method
+from abc import ABC, abstractmethod
+
+
+class RepositoryFactory(ABC):
+
+    @abstractmethod
+    def create_batch_repository(self):
+        pass
+
+    @abstractmethod
+    def create_sensor_log_repository(self):
+        pass

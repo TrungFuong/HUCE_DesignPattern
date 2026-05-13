@@ -1,2 +1,22 @@
-# app/application/dto/farm_dto.py
-# DTOs: CreateFarmRequest, FarmResponse
+from datetime import datetime
+from pydantic import BaseModel
+
+
+class CreateFarmRequest(BaseModel):
+    id: str | None = None
+    owner_id: str
+    name: str
+    address: str
+    crop_type: str
+    planting_date: datetime | None = None
+    harvest_date: datetime | None = None
+
+
+class FarmResponse(BaseModel):
+    id: str
+    owner_id: str
+    name: str
+    address: str
+    crop_type: str
+    planting_date: datetime | None
+    harvest_date: datetime | None

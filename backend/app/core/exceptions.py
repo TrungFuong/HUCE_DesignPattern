@@ -1,2 +1,10 @@
-# app/core/exceptions.py
-# Custom exceptions: NotFoundError, AuthenticationError, AuthorizationError, ValidationError
+class DomainException(Exception):
+    pass
+
+
+class NotFoundException(DomainException):
+    pass
+
+
+class UnauthorizedException(DomainException):
+    pass

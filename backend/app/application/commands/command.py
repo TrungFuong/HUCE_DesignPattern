@@ -1,3 +1,8 @@
-# app/application/commands/command.py
-# Abstract: Command (execute)
-# Pattern: Command
+from abc import ABC, abstractmethod
+
+
+class Command(ABC):
+
+    @abstractmethod
+    async def execute(self):
+        pass

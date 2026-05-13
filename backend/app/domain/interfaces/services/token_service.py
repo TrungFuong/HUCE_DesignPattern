@@ -1,2 +1,8 @@
-# app/domain/interfaces/services/token_service.py
-# Abstract: TokenService (create_token, verify_token)
+from abc import ABC, abstractmethod
+
+
+class TokenService(ABC):
+
+    @abstractmethod
+    def create_access_token(self, data: dict) -> str:
+        pass

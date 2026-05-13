@@ -1,2 +1,8 @@
-# app/domain/enums/role.py
-# Enum: Role (FARMER, DISTRIBUTOR, IMPORTER, ADMIN)
+from enum import Enum
+
+
+class RoleName(str, Enum):
+    ADMIN = "ADMIN"
+    FARMER = "FARMER"
+    DISTRIBUTOR = "DISTRIBUTOR"
+    IMPORTER = "IMPORTER"
