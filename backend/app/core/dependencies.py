@@ -1,0 +1,142 @@
+from functools import lru_cache
+from typing import AsyncGenerator
+
+from fastapi import Depends, Header, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.config import settings
+from app.core.security import decode_access_token
+from app.infrastructure.blockchain.blockchain_proxy import BlockchainProxy
+from app.infrastructure.blockchain.smart_contract_adapter import SmartContractAdapter
+from app.infrastructure.blockchain.web3_client import Web3Client
+from app.infrastructure.database.mongodb.mongo_client import get_mongo_database
+from app.infrastructure.database.sqlserver.repositories.sql_batch_repository import SqlBatchRepository
+from app.infrastructure.database.sqlserver.repositories.sql_farm_repository import SqlFarmRepository
+from app.infrastructure.database.sqlserver.repositories.sql_shipment_repository import SqlShipmentRepository
+from app.infrastructure.database.sqlserver.session import get_async_session
+from app.infrastructure.database.mongodb.repositories.mongo_sensor_log_repository import MongoSensorLogRepository
+from app.infrastructure.queue.redis_client import get_redis_client
+from app.infrastructure.queue.redis_queue_adapter import RedisQueueAdapter
+from app.infrastructure.qr.qr_code_service import QrCodeService
+from app.infrastructure.hashing.sha256_hash_service import Sha256HashService
+from app.application.builders.trace_response_builder import TraceResponseBuilder
+from app.application.facades.traceability_facade import TraceabilityFacade
+from app.application.facades.iot_pipeline_facade import IoTPipelineFacade
+from app.application.observers.blockchain_observer import BlockchainObserver
+from app.application.observers.dashboard_observer import DashboardObserver
+from app.application.observers.mongo_sensor_observer import MongoSensorObserver
+from app.application.observers.risk_observer import RiskObserver
+from app.application.services.batch_service import BatchService
+from app.application.services.blockchain_service import BlockchainService
+from app.application.services.farm_service import FarmService
+from app.application.services.risk_service import RiskService
+from app.application.services.sensor_service import SensorService
+from app.application.services.shipment_service import ShipmentService
+from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
+
+
+@lru_cache()
+def get_settings() -> object:
+    return settings
+
+
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+    async with get_async_session() as session:
+        yield session
+
+
+async def get_mongo_db():
+    yield get_mongo_database()
+
+
+async def get_redis():
+    yield get_redis_client()
+
+
+async def get_current_user(authorization: str | None = Header(default=None)):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header required")
+    token = authorization.replace("Bearer ", "")
+    try:
+        payload = decode_access_token(token)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return payload
+
+
+@lru_cache()
+def get_hash_service() -> Sha256HashService:
+    return Sha256HashService()
+
+
+@lru_cache()
+def get_qr_service() -> QrCodeService:
+    return QrCodeService()
+
+
+@lru_cache()
+def get_blockchain_client() -> SmartContractAdapter:
+    web3 = Web3Client(settings.blockchain_rpc_url)
+    contract = web3.get_contract(settings.contract_address)
+    return SmartContractAdapter(web3=web3, contract=contract)
+
+
+@lru_cache()
+def get_blockchain_proxy() -> BlockchainProxy:
+    return BlockchainProxy(blockchain_client=get_blockchain_client(), cache_client=get_redis_client())
+
+
+@lru_cache()
+def get_blockchain_service() -> BlockchainService:
+    return BlockchainService(blockchain_client=get_blockchain_proxy())
+
+
+def get_batch_service(db_session: AsyncSession = Depends(get_db_session)) -> BatchService:
+    return BatchService(batch_repository=SqlBatchRepository(db_session), qr_service=get_qr_service())
+
+
+def get_farm_service(db_session: AsyncSession = Depends(get_db_session)) -> FarmService:
+    return FarmService(farm_repository=SqlFarmRepository(db_session))
+
+
+def get_shipment_service(db_session: AsyncSession = Depends(get_db_session)) -> ShipmentService:
+    return ShipmentService(shipment_repository=SqlShipmentRepository(db_session))
+
+
+def get_sensor_service(mongo_db=Depends(get_mongo_db)) -> SensorService:
+    return SensorService(sensor_log_repository=MongoSensorLogRepository(mongo_db))
+
+
+def get_risk_service(db_session: AsyncSession = Depends(get_db_session)) -> RiskService:
+    return RiskService(risk_rule_repository=SqlRiskRuleRepository(db_session))
+
+
+def get_traceability_facade(
+    db_session: AsyncSession = Depends(get_db_session),
+    mongo_db=Depends(get_mongo_db),
+) -> TraceabilityFacade:
+    return TraceabilityFacade(
+        batch_service=get_batch_service(db_session),
+        farm_service=get_farm_service(db_session),
+        shipment_service=get_shipment_service(db_session),
+        sensor_service=get_sensor_service(mongo_db),
+        blockchain_service=get_blockchain_service(),
+        hash_service=get_hash_service(),
+        trace_response_builder=TraceResponseBuilder(),
+    )
+
+
+def get_iot_pipeline_facade(
+    db_session: AsyncSession = Depends(get_db_session),
+    mongo_db=Depends(get_mongo_db),
+) -> IoTPipelineFacade:
+    return IoTPipelineFacade(
+        mongo_observer=MongoSensorObserver(MongoSensorLogRepository(mongo_db)),
+        risk_observer=RiskObserver(
+            get_risk_service(db_session),
+            get_batch_service(db_session),
+            get_farm_service(db_session),
+        ),
+        blockchain_observer=BlockchainObserver(RedisQueueAdapter(get_redis_client())),
+        dashboard_observer=DashboardObserver(),
+    )
