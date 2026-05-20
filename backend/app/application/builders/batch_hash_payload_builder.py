@@ -23,13 +23,8 @@ class BatchHashPayloadBuilder:
         return self
 
     def with_shipment(self, shipment):
-        if shipment:
-            self.payload["shipment"] = {
-                "shipment_id": shipment.id,
-                "container_id": shipment.container_id,
-                "start_time": shipment.start_time.isoformat(),
-                "end_time": shipment.end_time.isoformat() if shipment.end_time else None,
-            }
+        shipments = shipment if isinstance(shipment, list) else ([shipment] if shipment else [])
+        self.payload["shipments"] = shipments
         return self
 
     def build(self):

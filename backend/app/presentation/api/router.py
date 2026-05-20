@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 from app.infrastructure.database.sqlserver.session import init_db
 from app.presentation.api.v1.auth_controller import router as auth_router
 from app.presentation.api.v1.batch_controller import router as batch_router
+from app.presentation.api.v1.container_controller import router as container_router
+from app.presentation.api.v1.crop_type_controller import router as crop_type_router
 from app.presentation.api.v1.farm_controller import router as farm_router
 from app.presentation.api.v1.risk_rule_controller import router as risk_rule_router
 from app.presentation.api.v1.shipment_controller import router as shipment_router
@@ -26,6 +28,8 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(batch_router)
+    app.include_router(container_router)
+    app.include_router(crop_type_router)
     app.include_router(farm_router)
     app.include_router(risk_rule_router)
     app.include_router(shipment_router)

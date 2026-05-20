@@ -16,9 +16,9 @@ class RiskService:
             SoilRiskStrategy(),
         ]
 
-    async def classify_sensor_log(self, sensor_log, crop_type: str | None = None):
-        rule_key = crop_type or getattr(sensor_log, "crop_type", None) or sensor_log.batch_id
-        rules = await self.risk_rule_repository.find_by_crop_type(rule_key)
+    async def classify_sensor_log(self, sensor_log, crop_type_id: str | None = None):
+        rule_key = crop_type_id or getattr(sensor_log, "crop_type_id", None) or sensor_log.batch_id
+        rules = await self.risk_rule_repository.find_by_crop_type_id(rule_key)
         if not rules:
             return RiskLevel.NORMAL
         rule = rules[0]

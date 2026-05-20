@@ -6,7 +6,7 @@ from app.domain.entities.risk_rule import RiskRule
 class RiskRuleRepository(ABC):
 
     @abstractmethod
-    async def find_by_crop_type(self, crop_type: str) -> list[RiskRule]:
+    async def find_by_crop_type_id(self, crop_type_id: str) -> list[RiskRule]:
         pass
 
     @abstractmethod

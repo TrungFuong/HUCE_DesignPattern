@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class RiskLevel(str, Enum):
-    NORMAL = "NORMAL"
-    AT_RISK = "AT_RISK"
+class RiskLevel(IntEnum):
+    NORMAL = 0
+    AT_RISK = 1

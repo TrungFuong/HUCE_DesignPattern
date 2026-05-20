@@ -12,3 +12,11 @@ async def trace_batch(
     traceability: TraceabilityFacade = Depends(get_traceability_facade),
 ):
     return await traceability.trace_batch(batch_id)
+
+
+@router.get("/{batch_id}/public")
+async def trace_batch_public(
+    batch_id: str,
+    traceability: TraceabilityFacade = Depends(get_traceability_facade),
+):
+    return await traceability.trace_batch_public(batch_id)

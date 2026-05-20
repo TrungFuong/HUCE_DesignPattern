@@ -7,7 +7,6 @@ class CreateFarmRequest(BaseModel):
     owner_id: str
     name: str
     address: str
-    crop_type: str
     planting_date: datetime | None = None
     harvest_date: datetime | None = None
 
@@ -17,6 +16,5 @@ class FarmResponse(BaseModel):
     owner_id: str
     name: str
     address: str
-    crop_type: str
     planting_date: datetime | None
     harvest_date: datetime | None
