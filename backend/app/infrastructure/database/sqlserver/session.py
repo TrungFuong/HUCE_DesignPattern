@@ -7,6 +7,7 @@ from app.infrastructure.database.sqlserver.models import Base
 # Import model modules so SQLAlchemy registers every table in Base.metadata.
 from app.infrastructure.database.sqlserver.models import batch_model  # noqa: F401
 from app.infrastructure.database.sqlserver.models import container_model  # noqa: F401
+from app.infrastructure.database.sqlserver.models import crop_type_model  # noqa: F401
 from app.infrastructure.database.sqlserver.models import farm_model  # noqa: F401
 from app.infrastructure.database.sqlserver.models import risk_rule_model  # noqa: F401
 from app.infrastructure.database.sqlserver.models import shipment_model  # noqa: F401

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class RiskRuleRequest(BaseModel):
     id: str | None = None
-    crop_type: str
+    crop_type_id: str
     min_temperature: float
     max_temperature: float
     min_humidity: float

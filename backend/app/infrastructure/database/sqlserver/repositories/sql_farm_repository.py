@@ -19,7 +19,6 @@ class SqlFarmRepository(FarmRepository):
             owner_id=model.owner_id,
             name=model.name,
             address=model.address,
-            crop_type=model.crop_type,
             planting_date=model.planting_date,
             harvest_date=model.harvest_date,
         )
@@ -30,7 +29,6 @@ class SqlFarmRepository(FarmRepository):
             owner_id=farm.owner_id,
             name=farm.name,
             address=farm.address,
-            crop_type=farm.crop_type,
             planting_date=farm.planting_date,
             harvest_date=farm.harvest_date,
         )

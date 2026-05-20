@@ -1,8 +1,10 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class RoleName(str, Enum):
-    ADMIN = "ADMIN"
-    FARMER = "FARMER"
-    DISTRIBUTOR = "DISTRIBUTOR"
-    IMPORTER = "IMPORTER"
+class RoleName(IntEnum):
+    ADMIN = 0
+    FARMER = 1
+    TRADER = 2
+    DISTRIBUTOR = 3
+    IMPORTER = 4
+    

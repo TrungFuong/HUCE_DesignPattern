@@ -27,6 +27,9 @@ backend/qrcodes/
 *.log
 uvicorn.*.log
 
+# Local planning/design documents
+docs/
+
 # OS/editor files
 .DS_Store
 Thumbs.db
