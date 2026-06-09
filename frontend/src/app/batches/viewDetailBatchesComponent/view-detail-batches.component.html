@@ -1,0 +1,47 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Chi tiết lô sản phẩm">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Chi tiết lô sản phẩm</p>
+        <h2>{{ batch.product_name }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng chi tiết" (click)="close.emit()">×</button>
+    </header>
+
+    <div class="detail-grid">
+
+      <article>
+        <span>Nông trại</span>
+        <strong>{{ farmName || batch.farm_id }}</strong>
+      </article>
+      <article>
+        <span>Loại nông sản</span>
+        <strong>{{ cropTypeName || batch.crop_type_id || 'Không có' }}</strong>
+      </article>
+      <article>
+        <span>Ngày thu hoạch</span>
+        <strong>{{ batch.harvest_date | date: 'dd/MM/yyyy' }}</strong>
+      </article>
+      <article>
+        <span>Số lượng</span>
+        <strong>{{ batch.quantity }} {{ batch.quantity_unit }}</strong>
+      </article>
+      <article>
+        <span>Phân loại/chất lượng</span>
+        <strong>{{ batch.grade || 'Chưa cập nhật' }}</strong>
+      </article>
+      <article>
+        <span>Trạng thái</span>
+        <strong>{{ batch.status }}</strong>
+      </article>
+      <article>
+        <span>Mức rủi ro</span>
+        <strong>{{ batch.risk_level }}</strong>
+      </article>
+    </div>
+
+    <footer class="modal-actions">
+      <button type="button" (click)="close.emit()">Đóng</button>
+    </footer>
+  </section>
+</div>

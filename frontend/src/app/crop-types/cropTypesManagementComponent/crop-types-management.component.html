@@ -1,0 +1,102 @@
+<section class="crop-types-page">
+  @if (toastMessage) {
+    <div class="toast" [class.error]="toastType === 'error'" role="status">
+      {{ toastMessage }}
+    </div>
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Danh mục loại nông sản</p>
+      <h1>Quản lý loại nông sản</h1>
+    </div>
+    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+  </header>
+
+  <section class="table-panel">
+    @if (isLoading) {
+      <p class="empty-state">Đang tải danh sách loại nông sản...</p>
+    } @else if (!cropTypes.length) {
+      <p class="empty-state">Chưa có loại nông sản nào. Hãy tạo mới bản ghi đầu tiên.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Mã loại</th>
+              <th>Tên loại nông sản</th>
+              <th>Mô tả</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cropType of pagedCropTypes; track cropType.id; let index = $index) {
+              <tr>
+                <td class="index-cell">{{ getRowNumber(index) }}</td>
+                <td>
+                  <strong>{{ cropType.code }}</strong>
+                </td>
+                <td>{{ cropType.name }}</td>
+                <td>{{ cropType.description || 'Chưa cập nhật' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="view-button" type="button" (click)="openDetail(cropType)">Xem chi tiết</button>
+                    <button class="edit-button" type="button" (click)="openEditForm(cropType)">Sửa</button>
+                    <button class="delete-button" type="button" (click)="openDeleteConfirm(cropType)">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="pagination">
+        <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+        <div>
+          <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            Trước
+          </button>
+          <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            Sau
+          </button>
+        </div>
+      </footer>
+    }
+  </section>
+</section>
+
+@if (isFormOpen) {
+  <app-create-update-crop-types
+    [cropType]="editingCropType"
+    (cancel)="closeForm()"
+    (save)="saveCropType($event)"
+  />
+}
+
+@if (viewingCropType) {
+  <app-view-detail-crop-types
+    [cropType]="viewingCropType"
+    (close)="viewingCropType = null"
+  />
+}
+
+@if (deletingCropType) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-label="Xác nhận xóa loại nông sản">
+      <header>
+        <p class="eyebrow">Xác nhận xóa</p>
+        <h2>Xóa loại nông sản?</h2>
+      </header>
+      <p>
+        Bạn có chắc muốn xóa loại nông sản <strong>{{ deletingCropType.name }}</strong> không?
+        Hành động này không thể hoàn tác.
+      </p>
+      <footer>
+        <button class="cancel-delete-button" type="button" (click)="deletingCropType = null">Hủy</button>
+        <button class="confirm-delete-button" type="button" (click)="confirmDelete()">Xóa</button>
+      </footer>
+    </section>
+  </div>
+}
