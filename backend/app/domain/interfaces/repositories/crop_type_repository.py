@@ -20,3 +20,11 @@ class CropTypeRepository(ABC):
     @abstractmethod
     async def save(self, crop_type: CropType) -> CropType:
         pass
+
+    @abstractmethod
+    async def update(self, crop_type: CropType) -> CropType:
+        pass
+
+    @abstractmethod
+    async def delete(self, crop_type_id: str) -> None:
+        pass

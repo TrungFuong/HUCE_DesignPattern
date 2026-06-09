@@ -45,3 +45,20 @@ class SqlCropTypeRepository(CropTypeRepository):
         self.db_session.add(model)
         await self.db_session.commit()
         return crop_type
+
+    async def update(self, crop_type: CropType) -> CropType:
+        model = await self.db_session.get(CropTypeModel, crop_type.id)
+        if model is None:
+            raise ValueError("Crop type not found")
+        model.code = crop_type.code
+        model.name = crop_type.name
+        model.description = crop_type.description
+        await self.db_session.commit()
+        return crop_type
+
+    async def delete(self, crop_type_id: str) -> None:
+        model = await self.db_session.get(CropTypeModel, crop_type_id)
+        if model is None:
+            raise ValueError("Crop type not found")
+        await self.db_session.delete(model)
+        await self.db_session.commit()

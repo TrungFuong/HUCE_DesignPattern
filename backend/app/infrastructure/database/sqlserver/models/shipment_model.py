@@ -1,4 +1,4 @@
-from sqlalchemy import CheckConstraint, Column, DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint
+from sqlalchemy import CheckConstraint, Column, DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint, Unicode
 from app.infrastructure.database.sqlserver.models import Base
 
 
@@ -15,12 +15,12 @@ class ShipmentModel(Base):
     from_actor_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     to_actor_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     carrier_id = Column(String(36), ForeignKey("users.id"), nullable=False)
-    origin = Column(String(255), nullable=False)
-    destination = Column(String(255), nullable=False)
+    origin = Column(Unicode(255), nullable=False)
+    destination = Column(Unicode(255), nullable=False)
     status = Column(Integer, nullable=False)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=True)
-    notes = Column(String(500), nullable=True)
+    notes = Column(Unicode(500), nullable=True)
 
 
 class ShipmentItemModel(Base):
@@ -38,4 +38,4 @@ class ShipmentItemModel(Base):
     batch_id = Column(String(36), ForeignKey("batches.id"), nullable=False)
     container_id = Column(String(36), ForeignKey("containers.id"), nullable=False)
     quantity = Column(Float, nullable=False)
-    quantity_unit = Column(String(20), nullable=False, default="kg")
+    quantity_unit = Column(Unicode(20), nullable=False, default="kg")
