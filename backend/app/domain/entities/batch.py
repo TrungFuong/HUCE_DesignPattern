@@ -9,7 +9,7 @@ from app.domain.enums.risk_level import RiskLevel
 class Batch:
     id: str
     farm_id: str
-    crop_type_id: str
+    crop_type_id: str | None
     product_name: str
     harvest_date: datetime
     quantity: float

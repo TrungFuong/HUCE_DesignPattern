@@ -1,0 +1,79 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Quản lý risk rule</p>
+        <h2>{{ title }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng form" (click)="cancel.emit()">×</button>
+    </header>
+
+    <form class="risk-rule-form" (ngSubmit)="submit()" #riskRuleForm="ngForm">
+      <label class="full-span">
+        Loại nông sản
+        <select
+          name="crop_type_ids"
+          multiple
+          size="6"
+          [(ngModel)]="form.crop_type_ids"
+          (change)="updateCropTypeSelection($event)"
+          [disabled]="isLoadingCropTypes || !cropTypes.length"
+          required
+        >
+          @for (cropType of cropTypes; track cropType.id) {
+            <option [value]="cropType.id">{{ cropType.name }} ({{ cropType.code }})</option>
+          }
+        </select>
+        @if (isLoadingCropTypes) {
+          <span class="field-note">Đang tải danh sách loại nông sản...</span>
+        } @else if (cropTypesError) {
+          <span class="field-note error">{{ cropTypesError }}</span>
+        } @else {
+          <span class="field-note">Giữ Ctrl để chọn nhiều loại nông sản.</span>
+        }
+      </label>
+
+      <label>
+        Nhiệt độ tối thiểu
+        <input name="min_temperature" type="number" step="0.1" [(ngModel)]="form.min_temperature" required />
+      </label>
+
+      <label>
+        Nhiệt độ tối đa
+        <input name="max_temperature" type="number" step="0.1" [(ngModel)]="form.max_temperature" required />
+      </label>
+
+      <label>
+        Độ ẩm tối thiểu
+        <input name="min_humidity" type="number" step="0.1" [(ngModel)]="form.min_humidity" required />
+      </label>
+
+      <label>
+        Độ ẩm tối đa
+        <input name="max_humidity" type="number" step="0.1" [(ngModel)]="form.max_humidity" required />
+      </label>
+
+      <label>
+        Độ ẩm đất tối thiểu
+        <input name="min_soil_moisture" type="number" step="0.1" [(ngModel)]="form.min_soil_moisture" />
+      </label>
+
+      <label>
+        Độ ẩm đất tối đa
+        <input name="max_soil_moisture" type="number" step="0.1" [(ngModel)]="form.max_soil_moisture" />
+      </label>
+
+      <label class="full-span">
+        Thời lượng cảnh báo (phút)
+        <input name="duration_minutes" type="number" min="1" step="1" [(ngModel)]="form.duration_minutes" required />
+      </label>
+
+      <footer class="modal-actions full-span">
+        <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
+        <button class="primary-button" type="submit" [disabled]="riskRuleForm.invalid || !form.crop_type_ids.length">
+          {{ riskRule ? 'Cập nhật' : 'Tạo mới' }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

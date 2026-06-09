@@ -14,7 +14,15 @@ class BatchRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_all(self) -> list[Batch]:
+        pass
+
+    @abstractmethod
     async def update(self, batch: Batch) -> Batch:
+        pass
+
+    @abstractmethod
+    async def delete(self, batch_id: str) -> None:
         pass
 
     @abstractmethod

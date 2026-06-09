@@ -1,4 +1,7 @@
+import logging
+
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.infrastructure.database.sqlserver.session import init_db
@@ -11,14 +14,30 @@ from app.presentation.api.v1.risk_rule_controller import router as risk_rule_rou
 from app.presentation.api.v1.shipment_controller import router as shipment_router
 from app.presentation.api.v1.sensor_controller import router as sensor_router
 from app.presentation.api.v1.traceability_controller import router as traceability_router
+from app.presentation.api.v1.user_controller import router as user_router
+
+logger = logging.getLogger(__name__)
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="OCOP Traceability API")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:4200",
+            "http://127.0.0.1:4200",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.on_event("startup")
     async def startup() -> None:
-        await init_db()
+        try:
+            await init_db()
+        except Exception as error:
+            logger.warning("Database initialization skipped: %s", error)
 
     @app.exception_handler(ValueError)
     async def value_error_handler(request: Request, error: ValueError):
@@ -35,4 +54,5 @@ def create_app() -> FastAPI:
     app.include_router(shipment_router)
     app.include_router(sensor_router)
     app.include_router(traceability_router)
+    app.include_router(user_router)
     return app

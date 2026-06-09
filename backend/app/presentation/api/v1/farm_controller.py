@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.application.dto.farm_dto import CreateFarmRequest
+from app.application.dto.farm_dto import CreateFarmRequest, UpdateFarmRequest
 from app.application.services.farm_service import FarmService
 from app.infrastructure.database.sqlserver.repositories.sql_farm_repository import SqlFarmRepository
 from app.infrastructure.database.sqlserver.repositories.sql_user_repository import SqlUserRepository
@@ -18,6 +18,16 @@ async def create_farm(request: CreateFarmRequest):
         return await farm_service.create_farm(request)
 
 
+@router.get("/")
+async def list_farms():
+    async with get_async_session() as session:
+        farm_service = FarmService(
+            SqlFarmRepository(session),
+            SqlUserRepository(session),
+        )
+        return await farm_service.list_farms()
+
+
 @router.get("/{farm_id}")
 async def get_farm(farm_id: str):
     async with get_async_session() as session:
@@ -26,3 +36,23 @@ async def get_farm(farm_id: str):
             SqlUserRepository(session),
         )
         return await farm_service.get_by_id(farm_id)
+
+
+@router.put("/{farm_id}")
+async def update_farm(farm_id: str, request: UpdateFarmRequest):
+    async with get_async_session() as session:
+        farm_service = FarmService(
+            SqlFarmRepository(session),
+            SqlUserRepository(session),
+        )
+        return await farm_service.update_farm(farm_id, request)
+
+
+@router.delete("/{farm_id}")
+async def delete_farm(farm_id: str):
+    async with get_async_session() as session:
+        farm_service = FarmService(
+            SqlFarmRepository(session),
+            SqlUserRepository(session),
+        )
+        return await farm_service.delete_farm(farm_id)

@@ -24,17 +24,12 @@ class BatchService:
         self.crop_type_repository = crop_type_repository
 
     async def create_batch(self, data):
-        await self._validate_farm(data.farm_id)
-        crop_type_id = data.crop_type_id
-        self._validate_required_text(crop_type_id, "Crop type id")
-        await self._validate_crop_type_id(crop_type_id)
-        self._validate_required_text(data.product_name, "Product name")
-        self._validate_positive_quantity(data.quantity, "Batch quantity")
-        self._validate_required_text(data.quantity_unit, "Batch quantity unit")
+        await self._validate_batch_data(data)
+        crop_type_id = data.crop_type_id.strip() if data.crop_type_id else None
         batch = Batch(
             id=data.id or str(uuid.uuid4()),
             farm_id=data.farm_id,
-            crop_type_id=crop_type_id.strip(),
+            crop_type_id=crop_type_id,
             product_name=data.product_name,
             harvest_date=data.harvest_date,
             quantity=data.quantity,
@@ -47,6 +42,40 @@ class BatchService:
         qr_url = await self.qr_service.generate_for_batch(saved_batch.id)
         saved_batch.qr_code_url = qr_url
         return await self.batch_repository.update(saved_batch)
+
+    async def list_batches(self):
+        return await self.batch_repository.find_all()
+
+    async def update_batch(self, batch_id: str, data):
+        existing_batch = await self.get_by_id(batch_id)
+        await self._validate_batch_data(data)
+        batch = Batch(
+            id=existing_batch.id,
+            farm_id=data.farm_id,
+            crop_type_id=data.crop_type_id.strip() if data.crop_type_id else None,
+            product_name=data.product_name,
+            harvest_date=data.harvest_date,
+            quantity=data.quantity,
+            quantity_unit=data.quantity_unit,
+            grade=data.grade,
+            status=existing_batch.status,
+            risk_level=existing_batch.risk_level,
+            qr_code_url=await self.qr_service.generate_for_batch(existing_batch.id),
+        )
+        return await self.batch_repository.update(batch)
+
+    async def delete_batch(self, batch_id: str):
+        await self.get_by_id(batch_id)
+        await self.batch_repository.delete(batch_id)
+        return {"message": "Batch deleted successfully"}
+
+    async def _validate_batch_data(self, data) -> None:
+        await self._validate_farm(data.farm_id)
+        if data.crop_type_id:
+            await self._validate_crop_type_id(data.crop_type_id)
+        self._validate_required_text(data.product_name, "Product name")
+        self._validate_positive_quantity(data.quantity, "Batch quantity")
+        self._validate_required_text(data.quantity_unit, "Batch quantity unit")
 
     async def _validate_farm(self, farm_id: str) -> None:
         if self.farm_repository is None:

@@ -5,7 +5,17 @@ from pydantic import BaseModel
 class CreateBatchRequest(BaseModel):
     id: str | None = None
     farm_id: str
-    crop_type_id: str
+    crop_type_id: str | None = None
+    product_name: str
+    harvest_date: datetime
+    quantity: float
+    quantity_unit: str = "kg"
+    grade: str | None = None
+
+
+class UpdateBatchRequest(BaseModel):
+    farm_id: str
+    crop_type_id: str | None = None
     product_name: str
     harvest_date: datetime
     quantity: float
@@ -16,7 +26,7 @@ class CreateBatchRequest(BaseModel):
 class BatchResponse(BaseModel):
     id: str
     farm_id: str
-    crop_type_id: str
+    crop_type_id: str | None
     product_name: str
     harvest_date: datetime
     quantity: float

@@ -1,0 +1,35 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Quản lý loại nông sản</p>
+        <h2>{{ title }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng form" (click)="cancel.emit()">×</button>
+    </header>
+
+    <form class="crop-type-form" (ngSubmit)="submit()" #cropTypeForm="ngForm">
+      <label>
+        Mã loại
+        <input name="code" type="text" [(ngModel)]="form.code" placeholder="VD: RICE" required />
+      </label>
+
+      <label>
+        Tên loại nông sản
+        <input name="name" type="text" [(ngModel)]="form.name" placeholder="VD: Gạo hữu cơ" required />
+      </label>
+
+      <label class="full-span">
+        Mô tả
+        <textarea name="description" rows="4" [(ngModel)]="form.description" placeholder="Thông tin ghi chú"></textarea>
+      </label>
+
+      <footer class="modal-actions full-span">
+        <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
+        <button class="primary-button" type="submit" [disabled]="cropTypeForm.invalid">
+          {{ cropType ? 'Cập nhật' : 'Tạo mới' }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

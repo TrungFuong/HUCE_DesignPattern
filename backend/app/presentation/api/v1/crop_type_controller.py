@@ -27,3 +27,17 @@ async def get_crop_type(code: str):
     async with get_async_session() as session:
         crop_type_service = CropTypeService(SqlCropTypeRepository(session))
         return await crop_type_service.get_by_code(code)
+
+
+@router.put("/{crop_type_id}")
+async def update_crop_type(crop_type_id: str, request: CropTypeRequest):
+    async with get_async_session() as session:
+        crop_type_service = CropTypeService(SqlCropTypeRepository(session))
+        return await crop_type_service.update_crop_type(crop_type_id, request)
+
+
+@router.delete("/{crop_type_id}")
+async def delete_crop_type(crop_type_id: str):
+    async with get_async_session() as session:
+        crop_type_service = CropTypeService(SqlCropTypeRepository(session))
+        return await crop_type_service.delete_crop_type(crop_type_id)

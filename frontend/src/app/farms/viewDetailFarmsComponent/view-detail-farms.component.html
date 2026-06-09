@@ -1,0 +1,38 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Chi tiết nông trại">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Chi tiết nông trại</p>
+        <h2>{{ farm.name }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng chi tiết" (click)="close.emit()">×</button>
+    </header>
+
+    <div class="detail-grid">
+      <article>
+        <span>Tên nông trại</span>
+        <strong>{{ farm.name }}</strong>
+      </article>
+      <article>
+        <span>Chủ nông trại</span>
+        <strong>{{ ownerName}}</strong>
+      </article>
+      <article class="full-span">
+        <span>Địa chỉ</span>
+        <strong>{{ farm.address }}</strong>
+      </article>
+      <article>
+        <span>Ngày gieo trồng</span>
+        <strong>{{ farm.planting_date ? (farm.planting_date | date: 'dd/MM/yyyy') : 'Chưa cập nhật' }}</strong>
+      </article>
+      <article>
+        <span>Ngày thu hoạch</span>
+        <strong>{{ farm.harvest_date ? (farm.harvest_date | date: 'dd/MM/yyyy') : 'Chưa cập nhật' }}</strong>
+      </article>
+    </div>
+
+    <footer class="modal-actions">
+      <button type="button" (click)="close.emit()">Đóng</button>
+    </footer>
+  </section>
+</div>
