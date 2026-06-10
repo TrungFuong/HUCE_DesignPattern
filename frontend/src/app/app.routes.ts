@@ -4,6 +4,7 @@ import { BatchesManagementComponent } from './batches/batchesManagementComponent
 import { CropTypesManagementComponent } from './crop-types/cropTypesManagementComponent/crop-types-management.component';
 import { FarmsManagementComponent } from './farms/farmsManagementComponent/farms-management.component';
 import { RiskRulesManagementComponent } from './risk-rules/riskRulesManagementComponent/risk-rules-management.component';
+import { ShipmentsManagementComponent } from './shipments/shipmentsManagementComponent/shipments-management.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardOverviewComponent },
@@ -11,7 +12,7 @@ export const routes: Routes = [
   { path: 'crop-types', component: CropTypesManagementComponent },
   { path: 'batches', component: BatchesManagementComponent },
   { path: 'risk-rules', component: RiskRulesManagementComponent },
-  { path: 'shipments', redirectTo: '' },
+  { path: 'shipments', component: ShipmentsManagementComponent },
   { path: 'sensors', redirectTo: '' },
   { path: 'reports', redirectTo: '' },
   { path: '**', redirectTo: '' },
