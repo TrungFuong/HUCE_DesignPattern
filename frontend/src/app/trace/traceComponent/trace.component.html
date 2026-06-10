@@ -1,0 +1,860 @@
+<article class="trace-page">
+  <!-- ═══ LOADING ═══ -->
+  @if (isLoading) {
+    <div class="state-screen">
+      <div class="spinner" aria-label="Đang tải..."></div>
+      <p>Đang tải thông tin lô hàng…</p>
+    </div>
+  }
+
+  <!-- ═══ ERROR ═══ -->
+  @if (!isLoading && errorMessage) {
+    <div class="state-screen error-screen">
+      <svg
+        width="48"
+        height="48"
+        viewBox="0 0 48 48"
+        fill="none"
+        aria-hidden="true"
+      >
+        <circle cx="24" cy="24" r="22" stroke="#b42318" stroke-width="2" />
+        <path
+          d="M24 14v12M24 32v2"
+          stroke="#b42318"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
+      </svg>
+      <p>{{ errorMessage }}</p>
+    </div>
+  }
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  @if (!isLoading && data) {
+    <!-- HERO -->
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="hero-icon" aria-hidden="true">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <path
+              d="M20 4C20 4 8 9 8 19v7l12 6 12-6v-7C32 9 20 4 20 4Z"
+              stroke="#a3cfaf"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M14 19l5 5 8-8"
+              stroke="#5ec97d"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div class="hero-content">
+          <p class="eyebrow">
+            Truy xuất nguồn gốc OCOP · {{ batchId | slice: 0 : 22 }}…
+          </p>
+          <h1>{{ data.product.name }}</h1>
+
+          <div class="hero-badges">
+            <span class="badge badge-white">
+              {{ data.product.quantity | number }}
+              {{ data.product.quantity_unit }}
+            </span>
+            @if (data.product.grade) {
+              <span class="badge badge-white">{{ data.product.grade }}</span>
+            }
+            @if (primaryShipment) {
+              <span class="badge badge-white"
+                >{{ primaryShipment.origin }} →
+                {{ primaryShipment.destination }}</span
+              >
+            }
+            <span class="badge badge-white"
+              >Thu hoạch
+              {{ data.product.harvest_date | date: "dd/MM/yyyy" }}</span
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- JOURNEY BAR -->
+    <nav class="journey-bar" aria-label="Tiến trình lô hàng">
+      <div class="journey-inner">
+        @for (step of journeySteps; track step.label) {
+          <div
+            class="j-step"
+            [class.done]="step.done"
+            [class.active]="step.active"
+          >
+            <div class="j-dot">
+              @if (step.done) {
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2 6l3 3 5-5"
+                    stroke="#5ec97d"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              }
+              @if (step.active) {
+                <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true">
+                  <circle cx="4" cy="4" r="3" fill="#f0a832" />
+                </svg>
+              }
+            </div>
+            <span class="j-label">{{ step.label }}</span>
+          </div>
+        }
+      </div>
+    </nav>
+
+    <div class="sections">
+      <!-- QR NOTICE -->
+      <div class="qr-notice">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
+          fill="none"
+          aria-hidden="true"
+        >
+          <rect
+            x="2"
+            y="2"
+            width="5"
+            height="5"
+            rx="1"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
+          <rect
+            x="11"
+            y="2"
+            width="5"
+            height="5"
+            rx="1"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
+          <rect
+            x="2"
+            y="11"
+            width="5"
+            height="5"
+            rx="1"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
+          <path
+            d="M12 12h1M14 12h2M12 14v2M14 14h2v2h-2"
+            stroke="currentColor"
+            stroke-width="1.3"
+            stroke-linecap="round"
+          />
+        </svg>
+        Trang này được truy cập qua quét mã QR thay đổi.
+      </div>
+
+      <!-- ① PRODUCT INFO -->
+      <section class="card" id="product-info">
+        <div class="card-header">
+          <div class="card-header-icon icon-green" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 1.5C8 1.5 2.5 4 2.5 8.5v3.5l5.5 2.5 5.5-2.5V8.5C13.5 4 8 1.5 8 1.5Z"
+                stroke="#2e6640"
+                stroke-width="1.2"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M5.5 8l2.5 2.5 4-4"
+                stroke="#4c9962"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <h2 class="card-title">Thông tin sản phẩm</h2>
+        </div>
+        <div class="card-body">
+          <dl class="field-grid">
+            <div class="field">
+              <dt class="field-label">Tên sản phẩm</dt>
+              <dd class="field-value field-value--large">
+                {{ data.product.name }}
+              </dd>
+            </div>
+            <div class="field">
+              <dt class="field-label">Mã lô hàng</dt>
+              <dd class="field-value field-value--mono">{{ batchId }}</dd>
+            </div>
+            <div class="field">
+              <dt class="field-label">Phân loại</dt>
+              <dd class="field-value">
+                {{ data.product.grade || "Chưa phân loại" }}
+              </dd>
+            </div>
+            <div class="field">
+              <dt class="field-label">Trạng thái</dt>
+              <dd class="field-value">
+                <span class="chip" [class]="statusClass">{{
+                  statusLabel
+                }}</span>
+              </dd>
+            </div>
+            <div class="field">
+              <dt class="field-label">Khối lượng</dt>
+              <dd class="field-value">
+                {{ data.product.quantity | number }}
+                {{ data.product.quantity_unit }}
+              </dd>
+            </div>
+            <div class="field">
+              <dt class="field-label">Ngày thu hoạch</dt>
+              <dd class="field-value">
+                {{ data.product.harvest_date | date: "dd/MM/yyyy · HH:mm" }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- ② FARM INFO -->
+      @if (data.farm) {
+        <section class="card" id="farm-info">
+          <div class="card-header">
+            <div class="card-header-icon icon-green" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M1.5 13.5h13M3.5 13.5V8l5-5.5 5 5.5v5.5"
+                  stroke="#2e6640"
+                  stroke-width="1.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <rect
+                  x="6"
+                  y="10"
+                  width="4"
+                  height="3.5"
+                  rx="0.5"
+                  stroke="#4c9962"
+                  stroke-width="1"
+                />
+              </svg>
+            </div>
+            <h2 class="card-title">Thông tin trang trại</h2>
+          </div>
+          <div class="card-body">
+            <dl class="field-grid">
+              <div class="field field--full">
+                <dt class="field-label">Tên trang trại</dt>
+                <dd class="field-value field-value--large">
+                  {{ data.farm.name }}
+                </dd>
+              </div>
+              @if (data.farm.owner) {
+                <div class="field">
+                  <dt class="field-label">Chủ vườn</dt>
+                  <dd class="field-value">{{ data.farm.owner.full_name }}</dd>
+                </div>
+              }
+              <div class="field field--full">
+                <dt class="field-label">Địa chỉ</dt>
+                <dd class="field-value">{{ data.farm.address }}</dd>
+              </div>
+              <div class="field">
+                <dt class="field-label">Ngày trồng</dt>
+                <dd class="field-value">
+                  {{ data.farm.planting_date | date: "dd/MM/yyyy" }}
+                </dd>
+              </div>
+              <div class="field">
+                <dt class="field-label">Ngày thu hoạch</dt>
+                <dd class="field-value">
+                  {{ data.farm.harvest_date | date: "dd/MM/yyyy" }}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+      }
+
+      <!-- ③ SHIPMENT INFO -->
+      @if (data.shipments.length > 0) {
+        <section class="card" id="shipment-info">
+          <div class="card-header">
+            <div class="card-header-icon icon-amber" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M1.5 11h10.5l2-5H4L2.5 2.5H1"
+                  stroke="#d4820a"
+                  stroke-width="1.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="5"
+                  cy="13"
+                  r="1.2"
+                  stroke="#d4820a"
+                  stroke-width="1"
+                />
+                <circle
+                  cx="11.5"
+                  cy="13"
+                  r="1.2"
+                  stroke="#d4820a"
+                  stroke-width="1"
+                />
+              </svg>
+            </div>
+            <h2 class="card-title">Thông tin vận chuyển</h2>
+            @if (primaryShipment) {
+              <span
+                class="chip"
+                [class]="
+                  primaryShipment.status === 'DELIVERED'
+                    ? 'status-ok'
+                    : primaryShipment.status === 'IN_TRANSIT'
+                      ? 'status-transit'
+                      : 'status-neutral'
+                "
+              >
+                {{ mapShipmentStatus(primaryShipment.status) }}
+              </span>
+            }
+          </div>
+          <div class="card-body">
+            @for (shipment of data.shipments; track shipment.origin) {
+              <div class="shipment-block">
+                <!-- Route strip -->
+                <div class="route-row">
+                  <div class="route-city">
+                    {{ shipment.origin }}
+                    <small>Điểm xuất phát</small>
+                  </div>
+                  <div class="route-arrow">
+                    <svg
+                      width="48"
+                      height="14"
+                      viewBox="0 0 48 14"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <line
+                        x1="2"
+                        y1="7"
+                        x2="40"
+                        y2="7"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-dasharray="3 3"
+                      />
+                      <path
+                        d="M37 3l7 4-7 4"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <div class="route-city route-city--right">
+                    {{ shipment.destination }}
+                    <small>Đích đến</small>
+                  </div>
+                </div>
+
+                <dl class="field-grid" style="margin-top: 14px">
+                  @if (shipment.from) {
+                    <div class="field">
+                      <dt class="field-label">Người gửi</dt>
+                      <dd class="field-value">{{ shipment.from.full_name }}</dd>
+                    </div>
+                  }
+                  @if (shipment.to) {
+                    <div class="field">
+                      <dt class="field-label">Người nhận</dt>
+                      <dd class="field-value">{{ shipment.to.full_name }}</dd>
+                    </div>
+                  }
+                  @if (shipment.carrier) {
+                    <div class="field">
+                      <dt class="field-label">Đơn vị vận chuyển</dt>
+                      <dd class="field-value">
+                        {{ shipment.carrier.full_name }}
+                      </dd>
+                    </div>
+                  }
+                  <div class="field">
+                    <dt class="field-label">Trạng thái</dt>
+                    <dd class="field-value">
+                      {{ mapShipmentStatus(shipment.status) }}
+                    </dd>
+                  </div>
+                  @if (shipment.start_time) {
+                    <div class="field">
+                      <dt class="field-label">Khởi hành</dt>
+                      <dd class="field-value">
+                        {{ shipment.start_time | date: "dd/MM/yyyy · HH:mm" }}
+                      </dd>
+                    </div>
+                  }
+                  @if (shipment.end_time) {
+                    <div class="field">
+                      <dt class="field-label">Giao hàng</dt>
+                      <dd class="field-value">
+                        {{ shipment.end_time | date: "dd/MM/yyyy · HH:mm" }}
+                      </dd>
+                    </div>
+                  }
+                  @if (shipment.notes) {
+                    <div class="field field--full">
+                      <dt class="field-label">Ghi chú</dt>
+                      <dd class="field-value field-value--muted">
+                        {{ shipment.notes }}
+                      </dd>
+                    </div>
+                  }
+                </dl>
+
+                <!-- Shipment items -->
+                @if (shipment.items.length > 0) {
+                  <div class="shipment-items">
+                    @for (item of shipment.items; track item.product_name) {
+                      <div class="item-row">
+                        <div class="item-name">{{ item.product_name }}</div>
+                        <div class="item-qty">
+                          {{ item.quantity | number }} {{ item.quantity_unit }}
+                        </div>
+                        @if (item.container) {
+                          <div class="item-container">
+                            {{ item.container.code }} ·
+                            {{ item.container.type }}
+                            @if (item.container.is_temperature_controlled) {
+                              <span class="badge badge-blue"
+                                >🌡 Có làm lạnh</span
+                              >
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ④ ENVIRONMENT DATA -->
+      <section class="card" id="environment-data">
+        <div class="card-header">
+          <div class="card-header-icon icon-teal" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 2C5.8 2 4 3.8 4 6c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4Z"
+                stroke="#0e7f70"
+                stroke-width="1.2"
+                stroke-linejoin="round"
+              />
+              <circle
+                cx="8"
+                cy="6"
+                r="1.5"
+                stroke="#0e7f70"
+                stroke-width="1.1"
+              />
+            </svg>
+          </div>
+          <h2 class="card-title">Dữ liệu môi trường</h2>
+          <span class="badge badge-slate">
+            {{
+              data.sensor_logs.length > 0
+                ? data.sensor_logs.length + " bản ghi"
+                : "Chưa có dữ liệu"
+            }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="env-metric-row">
+            <!-- Nhiệt độ -->
+            <div class="env-metric-card">
+              <div class="env-metric-icon">🌡</div>
+              <div class="env-metric-info">
+                <span class="env-metric-label">Nhiệt độ</span>
+                <span class="env-metric-current">
+                  {{
+                    latestTemp !== null ? (latestTemp | number: "1.1-1") : "--"
+                  }}
+                  <span class="env-metric-unit">
+                    {{ latestTemp !== null ? "°C" : "" }}
+                  </span>
+                </span>
+                <span class="env-metric-avg">
+                  {{
+                    avgTemp !== null
+                      ? "TB: " + (avgTemp | number: "1.1-1") + " °C"
+                      : "Chưa có dữ liệu"
+                  }}
+                </span>
+              </div>
+              @if (tempLogs.length > 0) {
+                <div class="env-sparkline-wrap">
+                  <svg
+                    viewBox="0 0 100 36"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      [attr.d]="sensorSparkTemperature"
+                      fill="none"
+                      stroke="#185fa5"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </div>
+              }
+            </div>
+
+            <!-- Độ ẩm không khí -->
+            <div class="env-metric-card">
+              <div class="env-metric-icon">💧</div>
+              <div class="env-metric-info">
+                <span class="env-metric-label">Độ ẩm không khí</span>
+                <span class="env-metric-current">
+                  {{
+                    latestHumidity !== null
+                      ? (latestHumidity | number: "1.0-0")
+                      : "--"
+                  }}
+                  <span class="env-metric-unit">
+                    {{ latestHumidity !== null ? "%" : "" }}
+                  </span>
+                </span>
+                <span class="env-metric-avg">
+                  {{
+                    avgHumidity !== null
+                      ? "TB: " + (avgHumidity | number: "1.0-0") + " %"
+                      : "Chưa có dữ liệu"
+                  }}
+                </span>
+              </div>
+              @if (humidityLogs.length > 0) {
+                <div class="env-sparkline-wrap">
+                  <svg
+                    viewBox="0 0 100 36"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      [attr.d]="sensorSparkHumidity"
+                      fill="none"
+                      stroke="#2e6640"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </div>
+              }
+            </div>
+
+            <!-- Độ ẩm đất -->
+            <div class="env-metric-card">
+              <div class="env-metric-icon">🌱</div>
+              <div class="env-metric-info">
+                <span class="env-metric-label">Độ ẩm đất</span>
+                <span class="env-metric-current">
+                  {{
+                    latestSoilMoisture !== null
+                      ? (latestSoilMoisture | number: "1.0-0")
+                      : "--"
+                  }}
+                  <span class="env-metric-unit">
+                    {{ latestSoilMoisture !== null ? "%" : "" }}
+                  </span>
+                </span>
+                <span class="env-metric-avg">
+                  {{
+                    avgSoilMoisture !== null
+                      ? "TB: " + (avgSoilMoisture | number: "1.0-0") + " %"
+                      : "Chưa có dữ liệu"
+                  }}
+                </span>
+              </div>
+              @if (soilMoistureLogs.length > 0) {
+                <div class="env-sparkline-wrap">
+                  <svg
+                    viewBox="0 0 100 36"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      [attr.d]="sensorSparkSoilMoisture"
+                      fill="none"
+                      stroke="#0e7f70"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Bảng — chỉ hiện khi có data -->
+          @if (data.sensor_logs.length > 0) {
+            <div class="table-wrap" style="margin-top: 16px">
+              <table class="sensor-table">
+                <thead>
+                  <tr>
+                    <th>Thời gian</th>
+                    <th>🌡 Nhiệt độ</th>
+                    <th>💧 Độ ẩm KK</th>
+                    <th>🌱 Độ ẩm đất</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (log of data.sensor_logs; track log.recorded_at) {
+                    <tr>
+                      <td>{{ log.recorded_at | date: "dd/MM · HH:mm" }}</td>
+                      <td>
+                        {{
+                          log.temperature !== null
+                            ? (log.temperature | number: "1.1-1") + " °C"
+                            : "—"
+                        }}
+                      </td>
+                      <td>
+                        {{
+                          log.humidity !== null
+                            ? (log.humidity | number: "1.0-0") + " %"
+                            : "—"
+                        }}
+                      </td>
+                      <td>
+                        {{
+                          log.soil_moisture !== null
+                            ? (log.soil_moisture | number: "1.0-0") + " %"
+                            : "—"
+                        }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- ⑤ RISK STATUS -->
+      <section class="card" id="risk-status">
+        <div class="card-header">
+          <div class="card-header-icon icon-red" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 1.5L14.5 14H1.5L8 1.5Z"
+                stroke="#b82b2b"
+                stroke-width="1.2"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M8 6.5v3M8 11.5v.5"
+                stroke="#b82b2b"
+                stroke-width="1.2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <h2 class="card-title">Trạng thái rủi ro</h2>
+        </div>
+        <div class="card-body">
+          <div
+            class="risk-panel"
+            [class.risk-panel--warn]="hasRiskViolation"
+            [class.risk-panel--ok]="!hasRiskViolation"
+          >
+            <div class="risk-panel__icon" aria-hidden="true">
+              @if (!hasRiskViolation) {
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <circle
+                    cx="11"
+                    cy="11"
+                    r="9"
+                    stroke="#2e6640"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M7 11l3 3 5-5"
+                    stroke="#4c9962"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              } @else {
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <circle
+                    cx="11"
+                    cy="11"
+                    r="9"
+                    stroke="#b82b2b"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M11 7v5M11 14.5v.5"
+                    stroke="#b82b2b"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              }
+            </div>
+            <div>
+              <p class="risk-panel__title">
+                @if (!hasRiskViolation) {
+                  Lô hàng đạt tiêu chuẩn — Rủi ro thấp
+                } @else {
+                  Phát hiện rủi ro — Cần kiểm tra
+                }
+              </p>
+              <p class="risk-panel__body">
+                @if (!hasRiskViolation) {
+                  Toàn bộ chỉ số trong suốt hành trình nằm trong ngưỡng an toàn
+                  theo quy tắc OCOP.
+                } @else {
+                  Một hoặc nhiều chỉ số cảm biến vượt ngưỡng cho phép. Đề nghị
+                  kiểm tra lại lô hàng.
+                }
+              </p>
+            </div>
+          </div>
+
+          <dl class="risk-list">
+            <div class="risk-item">
+              <div
+                class="risk-item__icon"
+                [class.risk-ok]="!hasRiskViolation"
+                [class.risk-warn]="hasRiskViolation"
+                aria-hidden="true"
+              >
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  @if (!hasRiskViolation) {
+                    <path
+                      d="M3.5 7.5l3 3 5-5"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  } @else {
+                    <path
+                      d="M7.5 4v4M7.5 10v.5"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      stroke-linecap="round"
+                    />
+                  }
+                  <circle
+                    cx="7.5"
+                    cy="7.5"
+                    r="6.5"
+                    stroke="currentColor"
+                    stroke-width="1.1"
+                  />
+                </svg>
+              </div>
+              <span class="risk-item__label">Mức rủi ro tổng hợp</span>
+              <span
+                class="risk-item__val"
+                [class.val-ok]="!hasRiskViolation"
+                [class.val-warn]="hasRiskViolation"
+              >
+                {{ riskLabel }}
+              </span>
+            </div>
+            @if (data.sensor_logs.length > 0) {
+              <div class="risk-item">
+                <div class="risk-item__icon risk-ok" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path
+                      d="M3.5 7.5l3 3 5-5"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <circle
+                      cx="7.5"
+                      cy="7.5"
+                      r="6.5"
+                      stroke="currentColor"
+                      stroke-width="1.1"
+                    />
+                  </svg>
+                </div>
+                <span class="risk-item__label">Dữ liệu cảm biến IoT</span>
+                <span class="risk-item__val val-ok"
+                  >{{ data.sensor_logs.length }} bản ghi</span
+                >
+              </div>
+            }
+            @if (data.shipments.length > 0) {
+              <div class="risk-item">
+                <div class="risk-item__icon risk-ok" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path
+                      d="M3.5 7.5l3 3 5-5"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <circle
+                      cx="7.5"
+                      cy="7.5"
+                      r="6.5"
+                      stroke="currentColor"
+                      stroke-width="1.1"
+                    />
+                  </svg>
+                </div>
+                <span class="risk-item__label">Chuỗi vận chuyển</span>
+                <span class="risk-item__val val-ok"
+                  >{{ data.shipments.length }} chuyến</span
+                >
+              </div>
+            }
+          </dl>
+        </div>
+      </section>
+    </div>
+    <!-- /sections -->
+
+    <footer class="trace-footer">
+      <strong>Hệ thống Truy Xuất Nguồn Gốc OCOP</strong>
+      · Dữ liệu mã hóa &amp; xác thực blockchain · © {{ "" | date: "yyyy" }}
+    </footer>
+  }
+  <!-- /main content -->
+</article>

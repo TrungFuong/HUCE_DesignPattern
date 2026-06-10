@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';  // ← thêm Router
 import { AuthMode, AuthResponse, AuthService } from './auth.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 
@@ -14,6 +14,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 })
 export class AppComponent {
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   title = 'OCOP Traceability';
   authMode: AuthMode = 'login';
@@ -21,6 +22,10 @@ export class AppComponent {
   authMessage = '';
   authError = '';
   token = this.authService.getToken();
+
+  get isTracePage(): boolean {
+    return this.router.url.includes('/traceability/') && this.router.url.includes('/public');
+  }
 
   readonly roles = [
     { value: 1, label: 'Nông dân' },
@@ -89,4 +94,5 @@ export class AppComponent {
         ? detail
         : 'Không thể kết nối API xác thực. Hãy kiểm tra backend FastAPI đang chạy ở localhost:8000.';
   }
+  
 }

@@ -1,3 +1,6 @@
+@if (isTracePage) {
+  <router-outlet />
+}
 @if (!token) {
   <main class="shell auth-shell">
     <section class="hero-panel">
@@ -49,9 +52,13 @@
           <div class="auth-header">
             <div>
               <p class="eyebrow">Tài khoản hệ thống</p>
-              <h2>{{ authMode === 'login' ? 'Đăng nhập' : 'Đăng ký' }}</h2>
+              <h2>{{ authMode === "login" ? "Đăng nhập" : "Đăng ký" }}</h2>
             </div>
-            <div class="mode-toggle" role="group" aria-label="Chọn chế độ xác thực">
+            <div
+              class="mode-toggle"
+              role="group"
+              aria-label="Chọn chế độ xác thực"
+            >
               <button
                 type="button"
                 [class.active]="authMode === 'login'"
@@ -70,7 +77,7 @@
           </div>
 
           <form class="auth-form" (ngSubmit)="submitAuth()" #authForm="ngForm">
-            @if (authMode === 'register') {
+            @if (authMode === "register") {
               <label>
                 Họ tên
                 <input
@@ -106,7 +113,7 @@
               />
             </label>
 
-            @if (authMode === 'register') {
+            @if (authMode === "register") {
               <label>
                 Vai trò
                 <select name="role" [(ngModel)]="form.role">
@@ -117,8 +124,18 @@
               </label>
             }
 
-            <button class="primary-action" type="submit" [disabled]="authForm.invalid || isSubmitting">
-              {{ isSubmitting ? 'Đang xử lý...' : authMode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản' }}
+            <button
+              class="primary-action"
+              type="submit"
+              [disabled]="authForm.invalid || isSubmitting"
+            >
+              {{
+                isSubmitting
+                  ? "Đang xử lý..."
+                  : authMode === "login"
+                    ? "Đăng nhập"
+                    : "Tạo tài khoản"
+              }}
             </button>
           </form>
 
