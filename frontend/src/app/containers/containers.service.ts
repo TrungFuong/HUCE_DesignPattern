@@ -1,18 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { User } from './user.model';
+import { Container } from './container.model';
 
 @Injectable({ providedIn: 'root' })
-export class UsersService {
+export class ContainersService {
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = 'http://localhost:8000';
 
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiBaseUrl}/users/`);
-  }
-
-  getFarmers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiBaseUrl}/users/?role=1`);
+  getContainers(): Observable<Container[]> {
+    return this.http.get<Container[]>(`${this.apiBaseUrl}/containers/`);
   }
 }

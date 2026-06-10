@@ -5,6 +5,7 @@ import { CropTypesManagementComponent } from './crop-types/cropTypesManagementCo
 import { FarmsManagementComponent } from './farms/farmsManagementComponent/farms-management.component';
 import { RiskRulesManagementComponent } from './risk-rules/riskRulesManagementComponent/risk-rules-management.component';
 import { TraceComponent } from './trace/traceComponent/trace.component';
+import { ShipmentsManagementComponent } from './shipments/shipmentsManagementComponent/shipments-management.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardOverviewComponent },
@@ -13,7 +14,7 @@ export const routes: Routes = [
   { path: 'batches', component: BatchesManagementComponent },
   { path: 'risk-rules', component: RiskRulesManagementComponent },
   { path: 'traceability/:batch_id/public', component: TraceComponent },
-  { path: 'shipments', redirectTo: '' },
+  { path: 'shipments', component: ShipmentsManagementComponent },
   { path: 'sensors', redirectTo: '' },
   { path: 'reports', redirectTo: '' },
   { path: '**', redirectTo: '' },
