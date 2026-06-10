@@ -1,7 +1,6 @@
 @if (isTracePage) {
   <router-outlet />
-}
-@if (!token) {
+} @else if (!token) {
   <main class="shell auth-shell">
     <section class="hero-panel">
       <nav class="topbar" aria-label="Điều hướng chính">
