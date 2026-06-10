@@ -1,0 +1,73 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Quản lý lô sản phẩm</p>
+        <h2>{{ title }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng form" (click)="cancel.emit()">×</button>
+    </header>
+
+    <form class="batch-form" (ngSubmit)="submit()" #batchForm="ngForm">
+      <label>
+        Nông trại
+        <select name="farm_id" [(ngModel)]="form.farm_id" [disabled]="isLoadingFarms" required>
+          <option value="" disabled>{{ isLoadingFarms ? 'Đang tải nông trại...' : 'Chọn nông trại' }}</option>
+          @for (farm of farms; track farm.id) {
+            <option [value]="farm.id">{{ farm.name }}</option>
+          }
+        </select>
+        @if (farmsError) {
+          <span class="field-error">{{ farmsError }}</span>
+        }
+      </label>
+
+      <label>
+        Loại nông sản
+        <select name="crop_type_id" [(ngModel)]="form.crop_type_id" [disabled]="isLoadingCropTypes">
+          <option [ngValue]="null">
+            {{ isLoadingCropTypes ? 'Đang tải loại nông sản...' : 'Không chọn loại nông sản' }}
+          </option>
+          @for (cropType of cropTypes; track cropType.id) {
+            <option [value]="cropType.id">{{ cropType.name }}</option>
+          }
+        </select>
+        @if (cropTypesError) {
+          <span class="field-error">{{ cropTypesError }}</span>
+        }
+      </label>
+
+      <label class="full-span">
+        Tên sản phẩm
+        <input name="product_name" type="text" [(ngModel)]="form.product_name" required />
+      </label>
+
+      <label>
+        Ngày thu hoạch
+        <input name="harvest_date" type="date" [(ngModel)]="form.harvest_date" required />
+      </label>
+
+      <label>
+        Số lượng
+        <input name="quantity" type="number" min="0.01" step="0.01" [(ngModel)]="form.quantity" required />
+      </label>
+
+      <label>
+        Đơn vị
+        <input name="quantity_unit" type="text" [(ngModel)]="form.quantity_unit" required />
+      </label>
+
+      <label>
+        Phân loại/chất lượng
+        <input name="grade" type="text" [(ngModel)]="form.grade" placeholder="VD: Loại A" />
+      </label>
+
+      <footer class="modal-actions full-span">
+        <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
+        <button class="primary-button" type="submit" [disabled]="batchForm.invalid">
+          {{ batch ? 'Cập nhật' : 'Tạo mới' }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

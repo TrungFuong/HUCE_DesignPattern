@@ -9,8 +9,12 @@ from app.domain.enums.risk_level import RiskLevel
 class Batch:
     id: str
     farm_id: str
+    crop_type_id: str | None
     product_name: str
     harvest_date: datetime
+    quantity: float
+    quantity_unit: str
+    grade: str | None
     status: BatchStatus
     risk_level: RiskLevel
     qr_code_url: str | None = None

@@ -1,0 +1,109 @@
+<section class="farms-page">
+  @if (toastMessage) {
+    <div class="toast" [class.error]="toastType === 'error'" role="status">
+      {{ toastMessage }}
+    </div>
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Danh mục nông trại</p>
+      <h1>Quản lý nông trại</h1>
+    </div>
+    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+  </header>
+
+  <section class="table-panel">
+    @if (isLoading) {
+      <p class="empty-state">Đang tải danh sách nông trại...</p>
+    } @else if (!farms.length) {
+      <p class="empty-state">Chưa có nông trại nào. Hãy tạo mới bản ghi đầu tiên.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tên nông trại</th>
+              <th>Chủ nông trại</th>
+              <th>Địa chỉ</th>
+              <th>Ngày gieo trồng</th>
+              <th>Ngày thu hoạch</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (farm of pagedFarms; track farm.id; let index = $index) {
+              <tr>
+                <td class="index-cell">{{ getRowNumber(index) }}</td>
+                <td>
+                  <strong>{{ farm.name }}</strong>
+                </td>
+                <td>
+                  <strong>{{ getOwnerName(farm.owner_id) }}</strong>
+                </td>
+                <td>{{ farm.address }}</td>
+                <td>{{ farm.planting_date ? (farm.planting_date | date: 'dd/MM/yyyy') : 'Chưa cập nhật' }}</td>
+                <td>{{ farm.harvest_date ? (farm.harvest_date | date: 'dd/MM/yyyy') : 'Chưa cập nhật' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="view-button" type="button" (click)="openDetail(farm)">Xem chi tiết</button>
+                    <button class="edit-button" type="button" (click)="openEditForm(farm)">Sửa</button>
+                    <button class="delete-button" type="button" (click)="openDeleteConfirm(farm)">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="pagination">
+        <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+        <div>
+          <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            Trước
+          </button>
+          <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            Sau
+          </button>
+        </div>
+      </footer>
+    }
+  </section>
+</section>
+
+@if (isFormOpen) {
+  <app-create-update-farms
+    [farm]="editingFarm"
+    (cancel)="closeForm()"
+    (save)="saveFarm($event)"
+  />
+}
+
+@if (viewingFarm) {
+  <app-view-detail-farms
+    [farm]="viewingFarm"
+    [ownerName]="getOwnerName(viewingFarm.owner_id)"
+    (close)="viewingFarm = null"
+  />
+}
+
+@if (deletingFarm) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-label="Xác nhận xóa nông trại">
+      <header>
+        <p class="eyebrow">Xác nhận xóa</p>
+        <h2>Xóa nông trại?</h2>
+      </header>
+      <p>
+        Bạn có chắc muốn xóa nông trại <strong>{{ deletingFarm.name }}</strong> không?
+        Hành động này không thể hoàn tác.
+      </p>
+      <footer>
+        <button class="cancel-delete-button" type="button" (click)="deletingFarm = null">Hủy</button>
+        <button class="confirm-delete-button" type="button" (click)="confirmDelete()">Xóa</button>
+      </footer>
+    </section>
+  </div>
+}

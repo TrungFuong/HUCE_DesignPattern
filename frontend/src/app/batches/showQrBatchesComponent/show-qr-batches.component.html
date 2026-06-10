@@ -1,0 +1,17 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Mã QR lô sản phẩm">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Mã QR truy xuất</p>
+        <h2>{{ batch.product_name }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng QR" (click)="close.emit()">×</button>
+    </header>
+
+    <div class="qr-content">
+      <img [src]="qrImageUrl" [alt]="'QR truy xuất cho ' + batch.product_name" />
+      <p>Quét mã QR để xem thông tin công khai của lô sản phẩm này.</p>
+      <a [href]="publicTraceUrl" target="_blank" rel="noreferrer">Mở trang truy xuất</a>
+    </div>
+  </section>
+</div>

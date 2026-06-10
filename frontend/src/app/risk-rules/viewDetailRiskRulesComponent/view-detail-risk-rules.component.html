@@ -1,0 +1,42 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Chi tiết risk rule">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Chi tiết risk rule</p>
+        <h2>{{ cropTypeName || riskRule.crop_type_id }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng chi tiết" (click)="close.emit()">×</button>
+    </header>
+
+    <div class="detail-grid">
+
+      <article class="full-span">
+        <span>Loại nông sản</span>
+        <strong>{{ cropTypeName || riskRule.crop_type_id }}</strong>
+      </article>
+      <article>
+        <span>Nhiệt độ</span>
+        <strong>{{ riskRule.min_temperature }} - {{ riskRule.max_temperature }}</strong>
+      </article>
+      <article>
+        <span>Độ ẩm</span>
+        <strong>{{ riskRule.min_humidity }} - {{ riskRule.max_humidity }}</strong>
+      </article>
+      <article>
+        <span>Độ ẩm đất</span>
+        <strong>
+          {{ riskRule.min_soil_moisture ?? 'Không áp dụng' }} -
+          {{ riskRule.max_soil_moisture ?? 'Không áp dụng' }}
+        </strong>
+      </article>
+      <article>
+        <span>Thời lượng cảnh báo</span>
+        <strong>{{ riskRule.duration_minutes }} phút</strong>
+      </article>
+    </div>
+
+    <footer class="modal-actions">
+      <button type="button" (click)="close.emit()">Đóng</button>
+    </footer>
+  </section>
+</div>

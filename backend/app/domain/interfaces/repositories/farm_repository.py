@@ -10,5 +10,17 @@ class FarmRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_all(self) -> list[Farm]:
+        pass
+
+    @abstractmethod
     async def save(self, farm: Farm) -> Farm:
+        pass
+
+    @abstractmethod
+    async def update(self, farm: Farm) -> Farm:
+        pass
+
+    @abstractmethod
+    async def delete(self, farm_id: str) -> None:
         pass
