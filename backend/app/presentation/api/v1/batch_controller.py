@@ -93,7 +93,5 @@ async def get_batch_qr_image(batch_id: str):
             SqlFarmRepository(session),
             SqlCropTypeRepository(session),
         )
-        batch = await batch_service.get_by_id(batch_id)
-        if not batch.qr_code_url:
-            batch = await batch_service.regenerate_qr_code(batch_id)
+        batch = await batch_service.regenerate_qr_code(batch_id)
         return FileResponse(batch.qr_code_url, media_type="image/png")

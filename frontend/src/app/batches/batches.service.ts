@@ -7,6 +7,7 @@ import { Batch, BatchPayload } from './batch.model';
 export class BatchesService {
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = 'http://localhost:8000';
+  private readonly publicBaseUrl = 'http://localhost:4200';
 
   getBatches(): Observable<Batch[]> {
     return this.http.get<Batch[]>(`${this.apiBaseUrl}/batches/`);
@@ -29,6 +30,6 @@ export class BatchesService {
   }
 
   getPublicTraceUrl(id: string): string {
-    return `${this.apiBaseUrl}/traceability/${id}/public`;
+    return `${this.publicBaseUrl}/traceability/${id}/public`;
   }
 }

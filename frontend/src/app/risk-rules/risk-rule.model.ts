@@ -22,7 +22,7 @@ export interface RiskRulePayload {
 }
 
 export interface RiskRuleFormValue {
-  crop_type_ids: string[];
+  crop_type_id: string;
   min_temperature: number;
   max_temperature: number;
   min_humidity: number;
