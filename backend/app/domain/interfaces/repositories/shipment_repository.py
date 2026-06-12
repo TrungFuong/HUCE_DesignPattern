@@ -10,11 +10,27 @@ class ShipmentRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_all(self) -> list[Shipment]:
+        pass
+
+    @abstractmethod
     async def save(self, shipment: Shipment) -> Shipment:
         pass
 
     @abstractmethod
+    async def update(self, shipment: Shipment) -> Shipment:
+        pass
+
+    @abstractmethod
+    async def delete(self, shipment_id: str) -> None:
+        pass
+
+    @abstractmethod
     async def save_item(self, item: ShipmentItem) -> ShipmentItem:
+        pass
+
+    @abstractmethod
+    async def replace_items(self, shipment_id: str, items: list[ShipmentItem]) -> None:
         pass
 
     @abstractmethod
