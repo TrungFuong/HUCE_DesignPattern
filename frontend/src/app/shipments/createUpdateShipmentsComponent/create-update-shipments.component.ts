@@ -78,7 +78,7 @@ export class CreateUpdateShipmentsComponent implements OnChanges {
   }
 
   getBatchLabel(batch: Batch): string {
-    return batch.id;
+    return batch.product_name;
   }
 
   getContainerLabel(container: Container): string {
