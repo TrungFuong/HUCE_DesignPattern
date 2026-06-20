@@ -20,3 +20,11 @@ class UserRepository(ABC):
     @abstractmethod
     async def save(self, user: User) -> User:
         pass
+
+    @abstractmethod
+    async def update(self, user: User) -> User:
+        pass
+
+    @abstractmethod
+    async def delete(self, user_id: str) -> bool:
+        pass

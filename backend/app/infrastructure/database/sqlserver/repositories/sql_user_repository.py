@@ -43,6 +43,24 @@ class SqlUserRepository(UserRepository):
         await self.db_session.commit()
         return user
 
+    async def update(self, user: User) -> User:
+        model = await self.db_session.get(UserModel, user.id)
+        if model:
+            model.full_name = user.full_name
+            model.email = user.email
+            model.role = int(user.role)
+            model.is_active = user.is_active
+            await self.db_session.commit()
+        return user
+
+    async def delete(self, user_id: str) -> bool:
+        model = await self.db_session.get(UserModel, user_id)
+        if model:
+            await self.db_session.delete(model)
+            await self.db_session.commit()
+            return True
+        return False
+
     def _to_entity(self, model: UserModel) -> User:
         return User(
             id=model.id,

@@ -36,6 +36,25 @@ def create_app() -> FastAPI:
     async def startup() -> None:
         try:
             await init_db()
+            
+            # Seed default admin account
+            from app.infrastructure.database.sqlserver.session import async_session
+            from app.infrastructure.database.sqlserver.repositories.sql_user_repository import SqlUserRepository
+            from app.application.services.auth_service import AuthService
+            from app.application.dto.auth_dto import RegisterRequest
+            
+            async with async_session() as session:
+                user_repo = SqlUserRepository(session)
+                existing = await user_repo.find_by_email("admin@ocop.vn")
+                if not existing:
+                    auth_service = AuthService(user_repo)
+                    await auth_service.register(RegisterRequest(
+                        full_name="Admin",
+                        email="admin@ocop.vn",
+                        password="Abc@1234",
+                        role=0
+                    ))
+                    logger.info("Created default admin account: admin@ocop.vn")
         except Exception as error:
             logger.warning("Database initialization skipped: %s", error)
 
