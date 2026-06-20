@@ -1,0 +1,273 @@
+:host {
+  display: block;
+}
+
+.profile-page {
+  display: grid;
+  gap: 18px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #376044;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 2.4vw, 2.7rem);
+  line-height: 1.1;
+}
+
+.profile-panel {
+  overflow: hidden;
+  border: 1px solid rgba(47, 82, 53, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 24px;
+}
+
+.empty-state {
+  margin: 0;
+  color: #4c6253;
+  font-weight: 600;
+}
+
+.notice.error {
+  color: #8a2727;
+  background: #fde8e8;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+@media (min-width: 600px) {
+  .profile-card {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.profile-avatar {
+  flex-shrink: 0;
+}
+
+.avatar-circle {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #2f6f3e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(47, 111, 62, 0.2);
+}
+
+.profile-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  flex-grow: 1;
+}
+
+@media (min-width: 800px) {
+  .profile-details {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4c6253;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-group .value {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #17261d;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: #e3f5e7;
+  color: #1e5a2f;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  align-self: flex-start;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  &.active {
+    background: #e6f4ea;
+    color: #137333;
+  }
+  &.inactive {
+    background: #fce8e6;
+    color: #c5221f;
+  }
+}
+
+.action-group {
+  margin-top: 10px;
+}
+
+.change-password-button {
+  align-self: flex-start;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #2f6f3e;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Modal styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(12, 30, 18, 0.42);
+}
+
+.confirm-modal {
+  width: min(400px, 100%);
+  border-radius: 8px;
+  padding: 24px;
+  background: #ffffff;
+  box-shadow: 0 26px 80px rgba(12, 30, 18, 0.24);
+}
+
+.confirm-modal h2 {
+  margin: 0;
+}
+
+.form-fields {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  color: #31533b;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* space for the eye icon */
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.auth-form input[type="password"],
+.auth-form input[type="text"] {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #d2dcd5;
+  border-radius: 8px;
+  background: #fbfdfc;
+  color: #17261d;
+  font-size: 0.95rem;
+}
+
+.required {
+  color: #c5221f;
+  margin-left: 2px;
+}
+
+.field-error {
+  color: #c5221f;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.confirm-modal footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.cancel-button,
+.submit-button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.cancel-button {
+  color: #24472e;
+  background: #dbe8d5;
+}
+
+.submit-button {
+  color: #ffffff;
+  background: #2f6f3e;
+}

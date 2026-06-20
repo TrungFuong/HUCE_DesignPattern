@@ -51,44 +51,11 @@
           <div class="auth-header">
             <div>
               <p class="eyebrow">Tài khoản hệ thống</p>
-              <h2>{{ authMode === "login" ? "Đăng nhập" : "Đăng ký" }}</h2>
-            </div>
-            <div
-              class="mode-toggle"
-              role="group"
-              aria-label="Chọn chế độ xác thực"
-            >
-              <button
-                type="button"
-                [class.active]="authMode === 'login'"
-                (click)="setMode('login')"
-              >
-                Đăng nhập
-              </button>
-              <button
-                type="button"
-                [class.active]="authMode === 'register'"
-                (click)="setMode('register')"
-              >
-                Đăng ký
-              </button>
+              <h2>Đăng nhập</h2>
             </div>
           </div>
 
           <form class="auth-form" (ngSubmit)="submitAuth()" #authForm="ngForm">
-            @if (authMode === "register") {
-              <label>
-                Họ tên
-                <input
-                  name="full_name"
-                  type="text"
-                  [(ngModel)]="form.full_name"
-                  placeholder="Nguyễn Văn A"
-                  required
-                />
-              </label>
-            }
-
             <label>
               Email
               <input
@@ -101,40 +68,21 @@
             </label>
 
             <label>
-              Mật khẩu
-              <input
-                name="password"
-                type="password"
-                [(ngModel)]="form.password"
-                minlength="6"
-                placeholder="Tối thiểu 6 ký tự"
-                required
-              />
-            </label>
-
-            @if (authMode === "register") {
-              <label>
-                Vai trò
-                <select name="role" [(ngModel)]="form.role">
-                  @for (role of roles; track role.value) {
-                    <option [ngValue]="role.value">{{ role.label }}</option>
-                  }
-                </select>
-              </label>
-            }
+          <span>Mật khẩu <span class="required">*</span></span>
+          <div class="password-input-wrapper">
+            <input name="password" [type]="showLoginPassword ? 'text' : 'password'" [(ngModel)]="form.password" required autocomplete="current-password" />
+            <button type="button" class="toggle-password-btn" (click)="showLoginPassword = !showLoginPassword" tabindex="-1">
+              {{ showLoginPassword ? '👁️' : '👁️‍🗨️' }}
+            </button>
+          </div>
+        </label>
 
             <button
               class="primary-action"
               type="submit"
               [disabled]="authForm.invalid || isSubmitting"
             >
-              {{
-                isSubmitting
-                  ? "Đang xử lý..."
-                  : authMode === "login"
-                    ? "Đăng nhập"
-                    : "Tạo tài khoản"
-              }}
+              {{ isSubmitting ? "Đang xử lý..." : "Đăng nhập" }}
             </button>
           </form>
 

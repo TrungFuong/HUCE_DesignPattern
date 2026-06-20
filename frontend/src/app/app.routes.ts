@@ -7,6 +7,8 @@ import { RiskRulesManagementComponent } from './risk-rules/riskRulesManagementCo
 import { TraceComponent } from './trace/traceComponent/trace.component';
 import { ShipmentsManagementComponent } from './shipments/shipmentsManagementComponent/shipments-management.component';
 import { ContainersManagementComponent } from './containers/containersManagementComponent/containers-management.component';
+import { UsersManagementComponent } from './users/usersManagementComponent/users-management.component';
+import { ProfileComponent } from './profile/profileComponent/profile.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardOverviewComponent },
@@ -17,6 +19,8 @@ export const routes: Routes = [
   { path: 'traceability/:batch_id/public', component: TraceComponent },
   { path: 'containers', component: ContainersManagementComponent },
   { path: 'shipments', component: ShipmentsManagementComponent },
+  { path: 'users', component: UsersManagementComponent },
+  { path: 'profile', component: ProfileComponent },
   { path: 'sensors', redirectTo: '' },
   { path: 'reports', redirectTo: '' },
   { path: '**', redirectTo: '' },

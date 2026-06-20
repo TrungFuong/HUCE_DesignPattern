@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet } from '@angular/router';  // ← thêm Router
-import { AuthMode, AuthResponse, AuthService } from './auth.service';
+import { AuthResponse, AuthService } from './auth.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 
 @Component({
@@ -17,7 +17,6 @@ export class AppComponent {
   private readonly router = inject(Router);
 
   title = 'OCOP Traceability';
-  authMode: AuthMode = 'login';
   isSubmitting = false;
   authMessage = '';
   authError = '';
@@ -27,43 +26,22 @@ export class AppComponent {
     return this.router.url.includes('/traceability/') && this.router.url.includes('/public');
   }
 
-  readonly roles = [
-    { value: 1, label: 'Nông dân' },
-    { value: 2, label: 'Thương lái' },
-    { value: 3, label: 'Nhà phân phối' },
-    { value: 0, label: 'Admin' },
-  ];
+  showLoginPassword = false;
 
   readonly form = {
-    full_name: '',
     email: '',
     password: '',
-    role: 1,
   };
-
-  setMode(mode: AuthMode): void {
-    this.authMode = mode;
-    this.authError = '';
-    this.authMessage = '';
-  }
 
   submitAuth(): void {
     this.authError = '';
     this.authMessage = '';
     this.isSubmitting = true;
 
-    const request$ =
-      this.authMode === 'login'
-        ? this.authService.login({
-            email: this.form.email.trim(),
-            password: this.form.password,
-          })
-        : this.authService.register({
-            full_name: this.form.full_name.trim(),
-            email: this.form.email.trim(),
-            password: this.form.password,
-            role: this.form.role,
-          });
+    const request$ = this.authService.login({
+      email: this.form.email.trim(),
+      password: this.form.password,
+    });
 
     request$.subscribe({
       next: (response) => this.handleAuthSuccess(response),
@@ -80,10 +58,7 @@ export class AppComponent {
   private handleAuthSuccess(response: AuthResponse): void {
     this.isSubmitting = false;
     this.token = response.access_token;
-    this.authMessage =
-      this.authMode === 'login'
-        ? 'Đăng nhập thành công. Chào mừng bạn quay lại hệ thống.'
-        : 'Đăng ký thành công. Tài khoản mới đã sẵn sàng sử dụng.';
+    // this.authMessage = 'Đăng nhập thành công. Chào mừng bạn quay lại hệ thống.';
   }
 
   private handleAuthError(error: HttpErrorResponse): void {
@@ -94,5 +69,5 @@ export class AppComponent {
         ? detail
         : 'Không thể kết nối API xác thực. Hãy kiểm tra backend FastAPI đang chạy ở localhost:8000.';
   }
-  
+
 }
