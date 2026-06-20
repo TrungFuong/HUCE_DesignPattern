@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
@@ -40,6 +40,18 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem(this.storageKey);
+  }
+
+  getMe(): Observable<any> {
+    const token = this.getToken();
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.apiBaseUrl}/auth/me`, { headers });
+  }
+
+  changePassword(payload: any): Observable<any> {
+    const token = this.getToken();
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.put(`${this.apiBaseUrl}/auth/change-password`, payload, { headers });
   }
 
   logout(): void {

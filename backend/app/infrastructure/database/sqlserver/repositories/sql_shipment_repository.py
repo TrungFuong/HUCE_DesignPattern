@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 
 from app.application.utils.enum_parser import parse_enum
 from app.domain.entities.shipment import Shipment, ShipmentItem
@@ -42,6 +42,10 @@ class SqlShipmentRepository(ShipmentRepository):
             return None
         return self._to_shipment(model)
 
+    async def find_all(self) -> list[Shipment]:
+        result = await self.db_session.execute(select(ShipmentModel).order_by(ShipmentModel.start_time.desc()))
+        return [self._to_shipment(model) for model in result.scalars().all()]
+
     async def save(self, shipment: Shipment) -> Shipment:
         model = ShipmentModel(
             id=shipment.id,
@@ -59,6 +63,30 @@ class SqlShipmentRepository(ShipmentRepository):
         await self.db_session.commit()
         return shipment
 
+    async def update(self, shipment: Shipment) -> Shipment:
+        model = await self.db_session.get(ShipmentModel, shipment.id)
+        if model is None:
+            return await self.save(shipment)
+        model.from_actor_id = shipment.from_actor_id
+        model.to_actor_id = shipment.to_actor_id
+        model.carrier_id = shipment.carrier_id
+        model.origin = shipment.origin
+        model.destination = shipment.destination
+        model.status = int(shipment.status)
+        model.start_time = shipment.start_time
+        model.end_time = shipment.end_time
+        model.notes = shipment.notes
+        await self.db_session.commit()
+        return shipment
+
+    async def delete(self, shipment_id: str) -> None:
+        model = await self.db_session.get(ShipmentModel, shipment_id)
+        if model is None:
+            raise ValueError("Shipment not found")
+        await self.db_session.execute(delete(ShipmentItemModel).where(ShipmentItemModel.shipment_id == shipment_id))
+        await self.db_session.delete(model)
+        await self.db_session.commit()
+
     async def save_item(self, item: ShipmentItem) -> ShipmentItem:
         model = ShipmentItemModel(
             id=item.id,
@@ -71,6 +99,21 @@ class SqlShipmentRepository(ShipmentRepository):
         self.db_session.add(model)
         await self.db_session.commit()
         return item
+
+    async def replace_items(self, shipment_id: str, items: list[ShipmentItem]) -> None:
+        await self.db_session.execute(delete(ShipmentItemModel).where(ShipmentItemModel.shipment_id == shipment_id))
+        for item in items:
+            self.db_session.add(
+                ShipmentItemModel(
+                    id=item.id,
+                    shipment_id=item.shipment_id,
+                    batch_id=item.batch_id,
+                    container_id=item.container_id,
+                    quantity=item.quantity,
+                    quantity_unit=item.quantity_unit,
+                )
+            )
+        await self.db_session.commit()
 
     async def find_by_batch_id(self, batch_id: str) -> list[Shipment]:
         result = await self.db_session.execute(

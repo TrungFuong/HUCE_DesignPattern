@@ -1,0 +1,88 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Chi tiết shipment">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Chi tiết shipment</p>
+        <h2>{{ shipment.origin }} → {{ shipment.destination }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng chi tiết" (click)="close.emit()">×</button>
+    </header>
+
+    <div class="detail-grid">
+      <article>
+        <span>Nông dân</span>
+        <strong>{{ getActorName(shipment.from_actor_id) }}</strong>
+      </article>
+      <article>
+        <span>Nhà phân phối</span>
+        <strong>{{ getActorName(shipment.to_actor_id) }}</strong>
+      </article>
+      <article>
+        <span>Người vận chuyển</span>
+        <strong>{{ getActorName(shipment.carrier_id) }}</strong>
+      </article>
+      <article>
+        <span>Trạng thái</span>
+        <strong>{{ getStatusLabel(shipment.status) }}</strong>
+      </article>
+      <article>
+        <span>Thời gian bắt đầu</span>
+        <strong>{{ shipment.start_time | date: 'dd/MM/yyyy HH:mm' }}</strong>
+      </article>
+      <article>
+        <span>Thời gian kết thúc</span>
+        <strong>{{ shipment.end_time ? (shipment.end_time | date: 'dd/MM/yyyy HH:mm') : 'Chưa cập nhật' }}</strong>
+      </article>
+      <article class="full-span">
+        <span>Ghi chú</span>
+        <strong>{{ shipment.notes || 'Không có ghi chú' }}</strong>
+      </article>
+    </div>
+
+    <section class="items-section">
+      <header>
+        <p class="eyebrow">Shipment items</p>
+        <h3>Thông tin hàng và container</h3>
+      </header>
+
+      @if (!shipment.items.length) {
+        <p class="empty-state">Shipment này chưa có item nào.</p>
+      } @else {
+        <div class="items-table">
+          <table>
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Lô sản phẩm</th>
+                <th>Container</th>
+                <th>Sức chứa</th>
+                <th>Số lượng</th>
+                <th>Đơn vị</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of shipment.items; track item; let index = $index) {
+                <tr>
+                  <td class="index-cell">{{ index + 1 }}</td>
+                  <td>
+                    <strong>{{ getBatchLabel(item.batch_id) }}</strong>
+                  </td>
+                  <td>
+                    <strong>{{ getContainerLabel(item.container_id) }}</strong>
+                  </td>
+                  <td>{{ getContainerCapacity(item.container_id) }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.quantity_unit }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <footer class="modal-actions">
+      <button type="button" (click)="close.emit()">Đóng</button>
+    </footer>
+  </section>
+</div>

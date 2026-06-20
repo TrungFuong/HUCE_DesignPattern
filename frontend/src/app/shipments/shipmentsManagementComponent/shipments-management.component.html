@@ -1,0 +1,125 @@
+<section class="shipments-page">
+  @if (toastMessage) {
+    <div class="toast" [class.error]="toastType === 'error'" role="status">
+      {{ toastMessage }}
+    </div>
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Danh mục vận chuyển</p>
+      <h1>Quản lý shipment</h1>
+    </div>
+    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+  </header>
+
+  <section class="table-panel">
+    @if (isLoading) {
+      <p class="empty-state">Đang tải danh sách shipment...</p>
+    } @else if (!shipments.length) {
+      <p class="empty-state">Chưa có shipment nào. Hãy tạo mới bản ghi đầu tiên.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tuyến vận chuyển</th>
+              <th>Nông dân</th>
+              <th>Nhà phân phối</th>
+              <th>Người vận chuyển</th>
+              <th>Bắt đầu</th>
+              <th>Trạng thái</th>
+              <th>Items</th>
+              <th class="actions-cell">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (shipment of pagedShipments; track shipment.id; let index = $index) {
+              <tr>
+                <td class="index-cell">{{ getRowNumber(index) }}</td>
+                <td>
+                  <strong>{{ shipment.origin }}</strong>
+                  <span>{{ shipment.destination }}</span>
+                </td>
+                <td>{{ getActorName(shipment.from_actor_id) }}</td>
+                <td>{{ getActorName(shipment.to_actor_id) }}</td>
+                <td>{{ getActorName(shipment.carrier_id) }}</td>
+                <td>{{ shipment.start_time | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <span class="status-pill">{{ getStatusLabel(shipment.status) }}</span>
+                </td>
+                <td>{{ shipment.items.length }}</td>
+                <td class="actions-cell">
+                  <div class="row-actions">
+                    <button class="view-button" type="button" (click)="openDetail(shipment)">Xem chi tiết</button>
+                    <button class="edit-button" type="button" (click)="openEditForm(shipment)">Sửa</button>
+                    <button class="delete-button" type="button" (click)="openDeleteConfirm(shipment)">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="pagination">
+        <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+        <div>
+          <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            Trước
+          </button>
+          <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            Sau
+          </button>
+        </div>
+      </footer>
+    }
+  </section>
+</section>
+
+@if (isFormOpen) {
+  <app-create-update-shipments
+    [shipment]="editingShipment"
+    [users]="users"
+    [usersError]="usersError"
+    [isLoadingUsers]="isLoadingUsers"
+    [batches]="batches"
+    [batchesError]="batchesError"
+    [isLoadingBatches]="isLoadingBatches"
+    [containers]="containers"
+    [containersError]="containersError"
+    [isLoadingContainers]="isLoadingContainers"
+    (cancel)="closeForm()"
+    (save)="saveShipment($event)"
+  />
+}
+
+@if (viewingShipment) {
+  <app-view-detail-shipments
+    [shipment]="viewingShipment"
+    [users]="users"
+    [batches]="batches"
+    [containers]="containers"
+    (close)="viewingShipment = null"
+  />
+}
+
+@if (deletingShipment) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-label="Xác nhận xóa shipment">
+      <header>
+        <p class="eyebrow">Xác nhận xóa</p>
+        <h2>Xóa shipment?</h2>
+      </header>
+      <p>
+        Bạn có chắc muốn xóa shipment <strong>{{ getShipmentTitle(deletingShipment) }}</strong> không?
+        Hành động này không thể hoàn tác.
+      </p>
+      <footer>
+        <button class="cancel-delete-button" type="button" (click)="deletingShipment = null">Hủy</button>
+        <button class="confirm-delete-button" type="button" (click)="confirmDelete()">Xóa</button>
+      </footer>
+    </section>
+  </div>
+}

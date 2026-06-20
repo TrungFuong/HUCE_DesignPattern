@@ -1,6 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
-import { forkJoin } from 'rxjs';
 import { CropType } from '../../crop-types/crop-type.model';
 import { CropTypesService } from '../../crop-types/crop-types.service';
 import { CreateUpdateRiskRulesComponent } from '../createUpdateRiskRulesComponent/create-update-risk-rules.component';
@@ -116,35 +115,15 @@ export class RiskRulesManagementComponent implements OnInit {
   }
 
   saveRiskRule(value: RiskRuleFormValue): void {
-    if (this.editingRiskRule) {
-      const [primaryCropTypeId, ...additionalCropTypeIds] = value.crop_type_ids;
-      const updateRequest = this.riskRulesService.updateRiskRule(
-        this.editingRiskRule.id,
-        this.toPayload(value, primaryCropTypeId)
-      );
-      const createRequests = additionalCropTypeIds.map((cropTypeId) =>
-        this.riskRulesService.createRiskRule(this.toPayload(value, cropTypeId))
-      );
+    const request = this.editingRiskRule
+      ? this.riskRulesService.updateRiskRule(this.editingRiskRule.id, this.toPayload(value))
+      : this.riskRulesService.createRiskRule(this.toPayload(value));
 
-      forkJoin([updateRequest, ...createRequests]).subscribe({
-        next: () => {
-          this.closeForm();
-          this.showToast('Cập nhật risk rule thành công.');
-          this.loadRiskRules();
-        },
-        error: (error: HttpErrorResponse) => this.showToast(this.getErrorMessage(error), 'error'),
-      });
-      return;
-    }
-
-    const requests = value.crop_type_ids.map((cropTypeId) =>
-      this.riskRulesService.createRiskRule(this.toPayload(value, cropTypeId))
-    );
-
-    forkJoin(requests).subscribe({
+    request.subscribe({
       next: () => {
+        const isEdit = !!this.editingRiskRule;
         this.closeForm();
-        this.showToast(`Tạo mới ${requests.length} risk rule thành công.`);
+        this.showToast(isEdit ? 'Cập nhật risk rule thành công.' : 'Tạo mới risk rule thành công.');
         this.loadRiskRules();
       },
       error: (error: HttpErrorResponse) => this.showToast(this.getErrorMessage(error), 'error'),
@@ -176,9 +155,9 @@ export class RiskRulesManagementComponent implements OnInit {
     return cropType ? `${cropType.name} (${cropType.code})` : cropTypeId;
   }
 
-  private toPayload(value: RiskRuleFormValue, cropTypeId: string): RiskRulePayload {
+  private toPayload(value: RiskRuleFormValue): RiskRulePayload {
     return {
-      crop_type_id: cropTypeId,
+      crop_type_id: value.crop_type_id,
       min_temperature: value.min_temperature,
       max_temperature: value.max_temperature,
       min_humidity: value.min_humidity,

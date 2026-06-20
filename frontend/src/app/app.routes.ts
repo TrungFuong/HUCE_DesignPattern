@@ -4,6 +4,11 @@ import { BatchesManagementComponent } from './batches/batchesManagementComponent
 import { CropTypesManagementComponent } from './crop-types/cropTypesManagementComponent/crop-types-management.component';
 import { FarmsManagementComponent } from './farms/farmsManagementComponent/farms-management.component';
 import { RiskRulesManagementComponent } from './risk-rules/riskRulesManagementComponent/risk-rules-management.component';
+import { TraceComponent } from './trace/traceComponent/trace.component';
+import { ShipmentsManagementComponent } from './shipments/shipmentsManagementComponent/shipments-management.component';
+import { ContainersManagementComponent } from './containers/containersManagementComponent/containers-management.component';
+import { UsersManagementComponent } from './users/usersManagementComponent/users-management.component';
+import { ProfileComponent } from './profile/profileComponent/profile.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardOverviewComponent },
@@ -11,7 +16,11 @@ export const routes: Routes = [
   { path: 'crop-types', component: CropTypesManagementComponent },
   { path: 'batches', component: BatchesManagementComponent },
   { path: 'risk-rules', component: RiskRulesManagementComponent },
-  { path: 'shipments', redirectTo: '' },
+  { path: 'traceability/:batch_id/public', component: TraceComponent },
+  { path: 'containers', component: ContainersManagementComponent },
+  { path: 'shipments', component: ShipmentsManagementComponent },
+  { path: 'users', component: UsersManagementComponent },
+  { path: 'profile', component: ProfileComponent },
   { path: 'sensors', redirectTo: '' },
   { path: 'reports', redirectTo: '' },
   { path: '**', redirectTo: '' },

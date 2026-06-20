@@ -65,3 +65,16 @@ class AuthService:
             "token_type": "bearer",
             "expires_at": expires,
         }
+
+    async def change_password(self, email: str, old_password: str, new_password: str) -> None:
+        if email == 'admin@ocop.vn':
+            raise ValueError("Tài khoản quản trị viên mặc định không được phép đổi mật khẩu.")
+
+        user = await self.user_repository.find_by_email(email)
+        if not user or not verify_password(old_password, user.password_hash):
+            raise ValueError("Mật khẩu cũ không chính xác")
+        if len(new_password) < 6:
+            raise ValueError("Password must be at least 6 characters")
+        
+        user.change_password(hash_password(new_password))
+        await self.user_repository.update(user)

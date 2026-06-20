@@ -18,10 +18,17 @@
       }
     </nav>
 
-    <button class="logout-button" type="button" (click)="logout()">
-      <span aria-hidden="true">↩</span>
-      Đăng xuất
-    </button>
+    <div class="bottom-actions">
+      <button class="profile-button" type="button" routerLink="/profile" routerLinkActive="active">
+        <span aria-hidden="true">👤</span>
+        Thông tin cá nhân
+      </button>
+
+      <button class="logout-button" type="button" (click)="logout()">
+        <span aria-hidden="true">↩</span>
+        Đăng xuất
+      </button>
+    </div>
   </aside>
 
   <section class="main-content">
