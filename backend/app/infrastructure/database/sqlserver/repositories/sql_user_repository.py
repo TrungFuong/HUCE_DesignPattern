@@ -48,6 +48,7 @@ class SqlUserRepository(UserRepository):
         if model:
             model.full_name = user.full_name
             model.email = user.email
+            model.password_hash = user.password_hash
             model.role = int(user.role)
             model.is_active = user.is_active
             await self.db_session.commit()
