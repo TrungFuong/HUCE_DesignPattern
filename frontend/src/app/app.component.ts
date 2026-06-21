@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet } from '@angular/router';  // ← thêm Router
 import { AuthResponse, AuthService } from './auth.service';
@@ -12,7 +12,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -24,6 +24,19 @@ export class AppComponent {
 
   get isTracePage(): boolean {
     return this.router.url.includes('/traceability/') && this.router.url.includes('/public');
+  }
+
+  ngOnInit(): void {
+    if (!this.token && !this.isTracePage) {
+      this.router.navigate(['/']);
+    } else if (this.token) {
+      this.authService.getMe().subscribe({
+        error: () => {
+          this.logout();
+          this.router.navigate(['/']);
+        }
+      });
+    }
   }
 
   showLoginPassword = false;
