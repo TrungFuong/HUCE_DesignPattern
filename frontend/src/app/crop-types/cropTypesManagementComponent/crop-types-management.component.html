@@ -8,16 +8,20 @@
   <header class="page-header">
     <div>
       <p class="eyebrow">Danh mục loại nông sản</p>
-      <h1>Quản lý loại nông sản</h1>
+      <h1>{{ isReadOnly ? 'Danh sách loại nông sản' : 'Quản lý loại nông sản' }}</h1>
     </div>
-    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    @if (!isReadOnly) {
+      <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    }
   </header>
 
   <section class="table-panel">
     @if (isLoading) {
       <p class="empty-state">Đang tải danh sách loại nông sản...</p>
     } @else if (!cropTypes.length) {
-      <p class="empty-state">Chưa có loại nông sản nào. Hãy tạo mới bản ghi đầu tiên.</p>
+      <p class="empty-state">
+        {{ isReadOnly ? 'Chưa có loại nông sản nào để xem.' : 'Chưa có loại nông sản nào. Hãy tạo mới bản ghi đầu tiên.' }}
+      </p>
     } @else {
       <div class="table-wrap">
         <table>
@@ -42,8 +46,10 @@
                 <td>
                   <div class="row-actions">
                     <button class="view-button" type="button" (click)="openDetail(cropType)">Xem chi tiết</button>
-                    <button class="edit-button" type="button" (click)="openEditForm(cropType)">Sửa</button>
-                    <button class="delete-button" type="button" (click)="openDeleteConfirm(cropType)">Xóa</button>
+                    @if (!isReadOnly) {
+                      <button class="edit-button" type="button" (click)="openEditForm(cropType)">Sửa</button>
+                      <button class="delete-button" type="button" (click)="openDeleteConfirm(cropType)">Xóa</button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -70,6 +76,7 @@
 @if (isFormOpen) {
   <app-create-update-crop-types
     [cropType]="editingCropType"
+    [isSaving]="isSaving"
     (cancel)="closeForm()"
     (save)="saveCropType($event)"
   />

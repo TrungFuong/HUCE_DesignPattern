@@ -10,6 +10,7 @@ import { BatchesService } from '../batches.service';
 import { CreateUpdateBatchesComponent } from '../createUpdateBatchesComponent/create-update-batches.component';
 import { ShowQrBatchesComponent } from '../showQrBatchesComponent/show-qr-batches.component';
 import { ViewDetailBatchesComponent } from '../viewDetailBatchesComponent/view-detail-batches.component';
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-batches-management',
@@ -22,6 +23,7 @@ export class BatchesManagementComponent implements OnInit {
   private readonly batchesService = inject(BatchesService);
   private readonly farmsService = inject(FarmsService);
   private readonly cropTypesService = inject(CropTypesService);
+  private readonly authService = inject(AuthService);
 
   currentPage = 1;
   readonly pageSize = 5;
@@ -39,8 +41,13 @@ export class BatchesManagementComponent implements OnInit {
   qrBatch: Batch | null = null;
   isFormOpen = false;
   isLoading = false;
+  isSaving = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
+
+  get isReadOnly(): boolean {
+    return this.authService.getRole() === 2;
+  }
 
   ngOnInit(): void {
     this.loadBatches();
@@ -155,6 +162,10 @@ export class BatchesManagementComponent implements OnInit {
   }
 
   saveBatch(value: BatchPayload): void {
+    if (this.isSaving) {
+      return;
+    }
+    this.isSaving = true;
     const isEdit = Boolean(this.editingBatch);
     const request$ = this.editingBatch
       ? this.batchesService.updateBatch(this.editingBatch.id, value)
@@ -162,11 +173,13 @@ export class BatchesManagementComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.isSaving = false;
         this.closeForm();
         this.showToast(isEdit ? 'Cập nhật lô sản phẩm thành công. QR đã được tạo mới.' : 'Tạo mới lô sản phẩm thành công. QR đã được tạo.');
         this.loadBatches();
       },
       error: (error: HttpErrorResponse) => {
+        this.isSaving = false;
         this.showToast(this.getErrorMessage(error), 'error');
       },
     });

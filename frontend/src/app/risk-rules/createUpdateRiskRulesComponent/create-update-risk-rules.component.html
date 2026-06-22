@@ -70,8 +70,12 @@
 
       <footer class="modal-actions full-span">
         <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
-        <button class="primary-button" type="submit" [disabled]="riskRuleForm.invalid || !form.crop_type_id">
-          {{ riskRule ? 'Cập nhật' : 'Tạo mới' }}
+        <button
+          class="primary-button"
+          type="submit"
+          [disabled]="riskRuleForm.invalid || !form.crop_type_id || isSaving"
+        >
+          {{ isSaving ? 'Đang lưu...' : (riskRule ? 'Cập nhật' : 'Tạo mới') }}
         </button>
       </footer>
     </form>

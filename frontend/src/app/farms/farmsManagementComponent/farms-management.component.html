@@ -76,6 +76,11 @@
 @if (isFormOpen) {
   <app-create-update-farms
     [farm]="editingFarm"
+    [farmers]="farmers"
+    [ownerLocked]="isFarmer"
+    [farmersError]="farmersError"
+    [isLoadingFarmers]="isLoadingFarmers"
+    [isSaving]="isSaving"
     (cancel)="closeForm()"
     (save)="saveFarm($event)"
   />

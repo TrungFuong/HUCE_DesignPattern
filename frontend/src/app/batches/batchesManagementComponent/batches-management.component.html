@@ -10,7 +10,9 @@
       <p class="eyebrow">Danh mục lô sản phẩm</p>
       <h1>Quản lý lô sản phẩm</h1>
     </div>
-    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    @if (!isReadOnly) {
+      <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    }
   </header>
 
   <section class="table-panel">
@@ -49,8 +51,10 @@
                   <div class="row-actions">
                     <button class="qr-button" type="button" (click)="openQr(batch)">Show QR</button>
                     <button class="view-button" type="button" (click)="openDetail(batch)">Xem chi tiết</button>
-                    <button class="edit-button" type="button" (click)="openEditForm(batch)">Sửa</button>
-                    <button class="delete-button" type="button" (click)="openDeleteConfirm(batch)">Xóa</button>
+                    @if (!isReadOnly) {
+                      <button class="edit-button" type="button" (click)="openEditForm(batch)">Sửa</button>
+                      <button class="delete-button" type="button" (click)="openDeleteConfirm(batch)">Xóa</button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -83,6 +87,7 @@
     [cropTypes]="cropTypes"
     [cropTypesError]="cropTypesError"
     [isLoadingCropTypes]="isLoadingCropTypes"
+    [isSaving]="isSaving"
     (cancel)="closeForm()"
     (save)="saveBatch($event)"
   />
