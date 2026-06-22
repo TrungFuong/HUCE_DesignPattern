@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Callable
 
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,6 +38,8 @@ from app.application.services.sensor_service import SensorService
 from app.application.services.shipment_service import ShipmentService
 from app.application.services.user_service import UserService
 from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
+from app.domain.entities.user import User
+from app.domain.enums.role import RoleName
 
 
 @lru_cache()
@@ -58,15 +60,35 @@ async def get_redis():
     yield get_redis_client()
 
 
-async def get_current_user(authorization: str | None = Header(default=None)):
-    if not authorization:
+async def get_current_user(
+    authorization: str | None = Header(default=None),
+    db_session: AsyncSession = Depends(get_db_session),
+) -> User:
+    if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Authorization header required")
-    token = authorization.replace("Bearer ", "")
+    token = authorization.split(" ", 1)[1].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Invalid token")
     try:
         payload = decode_access_token(token)
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid token")
-    return payload
+    email = payload.get("sub")
+    if not email:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user = await SqlUserRepository(db_session).find_by_email(email)
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=401, detail="User account is unavailable")
+    return user
+
+
+def require_roles(*allowed_roles: RoleName) -> Callable:
+    async def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(status_code=403, detail="You do not have permission to perform this action")
+        return current_user
+
+    return role_checker
 
 
 @lru_cache()
@@ -101,6 +123,7 @@ def get_batch_service(db_session: AsyncSession = Depends(get_db_session)) -> Bat
         batch_repository=SqlBatchRepository(db_session),
         qr_service=get_qr_service(),
         farm_repository=SqlFarmRepository(db_session),
+        shipment_repository=SqlShipmentRepository(db_session),
     )
 
 
@@ -108,6 +131,7 @@ def get_farm_service(db_session: AsyncSession = Depends(get_db_session)) -> Farm
     return FarmService(
         farm_repository=SqlFarmRepository(db_session),
         user_repository=SqlUserRepository(db_session),
+        batch_repository=SqlBatchRepository(db_session),
     )
 
 

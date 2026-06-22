@@ -22,8 +22,13 @@ class AuthService:
             valid_roles = format_enum_options(RoleName)
             raise ValueError(f"Invalid role. Use one of: {valid_roles}") from error
 
-    async def register(self, data):
+    async def register(self, data, allow_admin: bool = False):
         self._validate_register_data(data)
+        role = self._parse_role(data.role)
+        if role == RoleName.ADMIN and not allow_admin:
+            raise ValueError("Admin accounts can only be created by an administrator")
+        if role not in (RoleName.ADMIN, RoleName.FARMER, RoleName.TRADER, RoleName.DISTRIBUTOR):
+            raise ValueError("Unsupported role")
         existing = await self.user_repository.find_by_email(data.email)
         if existing:
             raise ValueError("Email already registered")
@@ -33,7 +38,7 @@ class AuthService:
             full_name=data.full_name,
             email=data.email,
             password_hash=password_hash,
-            role=self._parse_role(data.role),
+            role=role,
             is_active=True,
             created_at=datetime.utcnow(),
         )
@@ -58,6 +63,8 @@ class AuthService:
         user = await self.user_repository.find_by_email(data.email)
         if not user or not verify_password(data.password, user.password_hash):
             raise ValueError("Invalid credentials")
+        if not user.is_active:
+            raise ValueError("User account is inactive")
         expires = datetime.utcnow() + timedelta(minutes=60)
         token = create_access_token({"sub": user.email, "role": int(user.role)})
         return {

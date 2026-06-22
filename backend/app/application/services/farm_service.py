@@ -3,6 +3,8 @@ import uuid
 from app.domain.interfaces.repositories.farm_repository import FarmRepository
 from app.domain.entities.farm import Farm
 from app.domain.interfaces.repositories.user_repository import UserRepository
+from app.domain.interfaces.repositories.batch_repository import BatchRepository
+from app.domain.enums.role import RoleName
 
 
 class FarmService:
@@ -11,9 +13,11 @@ class FarmService:
         self,
         farm_repository: FarmRepository,
         user_repository: UserRepository | None = None,
+        batch_repository: BatchRepository | None = None,
     ):
         self.farm_repository = farm_repository
         self.user_repository = user_repository
+        self.batch_repository = batch_repository
 
     async def create_farm(self, data):
         await self._validate_farm_data(data)
@@ -45,6 +49,8 @@ class FarmService:
 
     async def delete_farm(self, farm_id: str):
         await self.get_by_id(farm_id)
+        if self.batch_repository and await self.batch_repository.find_by_farm_id(farm_id):
+            raise ValueError("Không thể xóa nông trại đang có lô sản phẩm")
         await self.farm_repository.delete(farm_id)
         return {"message": "Farm deleted successfully"}
 
@@ -61,6 +67,8 @@ class FarmService:
         owner = await self.user_repository.find_by_id(owner_id)
         if owner is None:
             raise ValueError("Farm owner_id does not exist")
+        if owner.role != RoleName.FARMER:
+            raise ValueError("Farm owner must have the farmer role")
 
     def _validate_required_text(self, value: str | None, field_name: str) -> None:
         if value is None or not value.strip():

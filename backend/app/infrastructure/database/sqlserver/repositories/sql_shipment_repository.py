@@ -46,6 +46,14 @@ class SqlShipmentRepository(ShipmentRepository):
         result = await self.db_session.execute(select(ShipmentModel).order_by(ShipmentModel.start_time.desc()))
         return [self._to_shipment(model) for model in result.scalars().all()]
 
+    async def find_by_to_actor_id(self, actor_id: str) -> list[Shipment]:
+        result = await self.db_session.execute(
+            select(ShipmentModel)
+            .where(ShipmentModel.to_actor_id == actor_id)
+            .order_by(ShipmentModel.start_time.desc())
+        )
+        return [self._to_shipment(model) for model in result.scalars().all()]
+
     async def save(self, shipment: Shipment) -> Shipment:
         model = ShipmentModel(
             id=shipment.id,

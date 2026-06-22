@@ -20,6 +20,12 @@ class SqlFarmRepository(FarmRepository):
         result = await self.db_session.execute(select(FarmModel).order_by(FarmModel.name))
         return [self._to_entity(model) for model in result.scalars().all()]
 
+    async def find_by_owner_id(self, owner_id: str) -> list[Farm]:
+        result = await self.db_session.execute(
+            select(FarmModel).where(FarmModel.owner_id == owner_id).order_by(FarmModel.name)
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
+
     async def save(self, farm: Farm) -> Farm:
         model = FarmModel(
             id=farm.id,

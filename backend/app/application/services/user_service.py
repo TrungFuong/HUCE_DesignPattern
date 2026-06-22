@@ -1,3 +1,8 @@
+from datetime import datetime
+import uuid
+
+from app.core.security import hash_password
+from app.domain.entities.user import User
 from app.domain.interfaces.repositories.user_repository import UserRepository
 from app.domain.enums.role import RoleName
 from app.application.dto.user_dto import UpdateUserRequest
@@ -16,6 +21,32 @@ class UserService:
             return users
         role_name = RoleName(role)
         return [user for user in users if user.role == role_name]
+
+    async def create_user(self, request):
+        if not request.full_name.strip():
+            raise ValueError("Full name is required")
+        if not request.email.strip() or "@" not in request.email:
+            raise ValueError("Valid email is required")
+        if len(request.password) < 6:
+            raise ValueError("Password must be at least 6 characters")
+        if await self.user_repository.find_by_email(request.email):
+            raise ValueError("Email already registered")
+        try:
+            role = RoleName(request.role)
+        except ValueError as error:
+            raise ValueError("Invalid role") from error
+        if role not in (RoleName.ADMIN, RoleName.FARMER, RoleName.TRADER, RoleName.DISTRIBUTOR):
+            raise ValueError("Unsupported role")
+        user = User(
+            id=str(uuid.uuid4()),
+            full_name=request.full_name.strip(),
+            email=request.email.strip(),
+            password_hash=hash_password(request.password),
+            role=role,
+            is_active=True,
+            created_at=datetime.utcnow(),
+        )
+        return await self.user_repository.save(user)
 
     async def update_user(self, user_id: str, request: UpdateUserRequest):
         user = await self.user_repository.find_by_id(user_id)

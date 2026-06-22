@@ -14,6 +14,10 @@ class FarmRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_by_owner_id(self, owner_id: str) -> list[Farm]:
+        pass
+
+    @abstractmethod
     async def save(self, farm: Farm) -> Farm:
         pass
 

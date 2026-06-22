@@ -1,12 +1,18 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.application.dto.container_dto import CreateContainerRequest, UpdateContainerRequest
 from app.application.services.container_service import ContainerService
 from app.infrastructure.database.sqlserver.repositories.sql_container_repository import SqlContainerRepository
 from app.infrastructure.database.sqlserver.repositories.sql_shipment_repository import SqlShipmentRepository
 from app.infrastructure.database.sqlserver.session import get_async_session
+from app.core.dependencies import require_roles
+from app.domain.enums.role import RoleName
 
-router = APIRouter(prefix="/containers", tags=["Containers"])
+router = APIRouter(
+    prefix="/containers",
+    tags=["Containers"],
+    dependencies=[Depends(require_roles(RoleName.ADMIN, RoleName.TRADER))],
+)
 
 
 @router.post("/")

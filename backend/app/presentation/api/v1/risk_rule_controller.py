@@ -1,14 +1,20 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.application.dto.risk_rule_dto import RiskRuleRequest
 from app.domain.entities.risk_rule import RiskRule
 from app.infrastructure.database.sqlserver.repositories.sql_crop_type_repository import SqlCropTypeRepository
 from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
 from app.infrastructure.database.sqlserver.session import get_async_session
+from app.core.dependencies import require_roles
+from app.domain.enums.role import RoleName
 
-router = APIRouter(prefix="/risk-rules", tags=["Risk Rules"])
+router = APIRouter(
+    prefix="/risk-rules",
+    tags=["Risk Rules"],
+    dependencies=[Depends(require_roles(RoleName.ADMIN, RoleName.FARMER))],
+)
 
 
 def validate_risk_rule(request: RiskRuleRequest) -> None:
