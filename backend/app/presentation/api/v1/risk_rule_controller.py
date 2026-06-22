@@ -1,8 +1,9 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.application.dto.risk_rule_dto import RiskRuleRequest
+from app.core.dependencies import get_current_user
 from app.domain.entities.risk_rule import RiskRule
 from app.infrastructure.database.sqlserver.repositories.sql_crop_type_repository import SqlCropTypeRepository
 from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
@@ -48,7 +49,10 @@ def build_risk_rule(request: RiskRuleRequest, risk_rule_id: str, crop_type_id: s
 
 
 @router.post("/")
-async def create_risk_rule(request: RiskRuleRequest):
+async def create_risk_rule(
+    request: RiskRuleRequest,
+    current_user: dict = Depends(get_current_user),
+):
     try:
         validate_risk_rule(request)
         async with get_async_session() as session:
@@ -61,14 +65,19 @@ async def create_risk_rule(request: RiskRuleRequest):
 
 
 @router.get("/")
-async def list_risk_rules():
+async def list_risk_rules(
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         repository = SqlRiskRuleRepository(session)
         return await repository.find_all()
 
 
 @router.get("/id/{risk_rule_id}")
-async def get_risk_rule_by_id(risk_rule_id: str):
+async def get_risk_rule_by_id(
+    risk_rule_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         repository = SqlRiskRuleRepository(session)
         risk_rule = await repository.find_by_id(risk_rule_id)
@@ -78,7 +87,11 @@ async def get_risk_rule_by_id(risk_rule_id: str):
 
 
 @router.put("/id/{risk_rule_id}")
-async def update_risk_rule(risk_rule_id: str, request: RiskRuleRequest):
+async def update_risk_rule(
+    risk_rule_id: str,
+    request: RiskRuleRequest,
+    current_user: dict = Depends(get_current_user),
+):
     try:
         validate_risk_rule(request)
         async with get_async_session() as session:
@@ -94,7 +107,10 @@ async def update_risk_rule(risk_rule_id: str, request: RiskRuleRequest):
 
 
 @router.delete("/id/{risk_rule_id}")
-async def delete_risk_rule(risk_rule_id: str):
+async def delete_risk_rule(
+    risk_rule_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     try:
         async with get_async_session() as session:
             repository = SqlRiskRuleRepository(session)
@@ -105,7 +121,10 @@ async def delete_risk_rule(risk_rule_id: str):
 
 
 @router.get("/{crop_type_id}")
-async def get_risk_rules(crop_type_id: str):
+async def get_risk_rules_by_crop_type(
+    crop_type_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         repository = SqlRiskRuleRepository(session)
         return await repository.find_by_crop_type_id(crop_type_id)
