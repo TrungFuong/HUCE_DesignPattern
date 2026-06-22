@@ -1,0 +1,173 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Quản lý shipment</p>
+        <h2>{{ title }}</h2>
+      </div>
+      <button type="button" class="icon-button" aria-label="Đóng form" (click)="cancelForm()">×</button>
+    </header>
+
+    <form class="shipment-form" (ngSubmit)="submit()" #shipmentForm="ngForm">
+      <label>
+        <span>Nông dân</span>
+        <select [(ngModel)]="form.from_actor_id" name="from_actor_id" [disabled]="isLoadingUsers" required>
+          <option value="" disabled>{{ isLoadingUsers ? 'Đang tải nông dân...' : 'Chọn nông dân' }}</option>
+          @for (user of senderUsers; track user.id) {
+            <option [value]="user.id">{{ user.full_name }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Nhà phân phối</span>
+        <select [(ngModel)]="form.to_actor_id" name="to_actor_id" [disabled]="isLoadingUsers" required>
+          <option value="" disabled>{{ isLoadingUsers ? 'Đang tải nhà phân phối...' : 'Chọn nhà phân phối' }}</option>
+          @for (user of receiverUsers; track user.id) {
+            <option [value]="user.id">{{ user.full_name }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Người vận chuyển</span>
+        <select [(ngModel)]="form.carrier_id" name="carrier_id" [disabled]="isLoadingUsers" required>
+          <option value="" disabled>{{ isLoadingUsers ? 'Đang tải người vận chuyển...' : 'Chọn người vận chuyển' }}</option>
+          @for (user of carrierUsers; track user.id) {
+            <option [value]="user.id">{{ user.full_name }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Trạng thái</span>
+        <select [(ngModel)]="form.status" name="status" required>
+          @for (status of statusOptions; track status.value) {
+            <option [ngValue]="status.value">{{ status.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Điểm đi</span>
+        <input type="text" [(ngModel)]="form.origin" name="origin" required />
+      </label>
+
+      <label>
+        <span>Điểm đến</span>
+        <input type="text" [(ngModel)]="form.destination" name="destination" required />
+      </label>
+
+      <label>
+        <span>Thời gian bắt đầu</span>
+        <input type="datetime-local" [(ngModel)]="form.start_time" name="start_time" required />
+      </label>
+
+      <label>
+        <span>Thời gian kết thúc</span>
+        <input type="datetime-local" [(ngModel)]="form.end_time" name="end_time" />
+      </label>
+
+      <label class="full-span">
+        <span>Ghi chú</span>
+        <textarea [(ngModel)]="form.notes" name="notes" rows="3"></textarea>
+      </label>
+
+      @if (usersError) {
+        <p class="field-error full-span">{{ usersError }}</p>
+      }
+
+      <section class="items-panel full-span">
+        <header>
+          <div>
+            <p class="eyebrow">Shipment items</p>
+            <h3>Danh sách hàng trong shipment</h3>
+          </div>
+          <button class="add-item-button" type="button" (click)="addItem()">Thêm item</button>
+        </header>
+
+        @if (batchesError) {
+          <p class="field-error">{{ batchesError }}</p>
+        }
+        @if (containersError) {
+          <p class="field-error">{{ containersError }}</p>
+        }
+
+        <div class="items-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Lô sản phẩm</th>
+                <th>Container</th>
+                <th>Số lượng</th>
+                <th>Đơn vị</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of form.items; track item; let index = $index) {
+                <tr>
+                  <td>
+                    <select
+                      [(ngModel)]="item.batch_id"
+                      [name]="'batch_id_' + index"
+                      [disabled]="isLoadingBatches"
+                      (ngModelChange)="applyBatchUnit(item)"
+                      required
+                    >
+                      <option value="" disabled>{{ isLoadingBatches ? 'Đang tải lô sản phẩm...' : 'Chọn lô sản phẩm' }}</option>
+                      @for (batch of batches; track batch.id) {
+                        <option [value]="batch.id">{{ getBatchLabel(batch) }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td>
+                    <select
+                      [(ngModel)]="item.container_id"
+                      [name]="'container_id_' + index"
+                      [disabled]="isLoadingContainers"
+                      required
+                    >
+                      <option value="" disabled>{{ isLoadingContainers ? 'Đang tải container...' : 'Chọn container' }}</option>
+                      @for (container of containers; track container.id) {
+                        <option [value]="container.id">{{ getContainerLabel(container) }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      [(ngModel)]="item.quantity"
+                      [name]="'quantity_' + index"
+                      required
+                    />
+                  </td>
+                  <td>
+                    <input type="text" [(ngModel)]="item.quantity_unit" [name]="'quantity_unit_' + index" required />
+                  </td>
+                  <td>
+                    <button
+                      class="remove-item-button"
+                      type="button"
+                      [disabled]="form.items.length === 1"
+                      (click)="removeItem(index)"
+                    >
+                      Xóa
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="modal-actions full-span">
+        <button type="button" class="secondary-button" (click)="cancelForm()">Hủy</button>
+        <button type="submit" class="primary-button" [disabled]="shipmentForm.invalid">Lưu</button>
+      </footer>
+    </form>
+  </section>
+</div>

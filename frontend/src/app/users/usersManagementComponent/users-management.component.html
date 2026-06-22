@@ -1,0 +1,159 @@
+<section class="users-page">
+  @if (message) {
+    <div class="toast" role="status">
+      {{ message }}
+    </div>
+  }
+  @if (error) {
+    <div class="toast error" role="status">
+      {{ error }}
+    </div>
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Danh mục người dùng</p>
+      <h1>Quản lý người dùng</h1>
+    </div>
+    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+  </header>
+
+  <section class="table-panel">
+    @if (isLoading && !showForm) {
+      <p class="empty-state">Đang tải danh sách người dùng...</p>
+    } @else if (!users.length) {
+      <p class="empty-state">Chưa có người dùng nào trong hệ thống.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Họ tên</th>
+              <th>Email</th>
+              <th>Vai trò</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users; track user.id; let index = $index) {
+              <tr>
+                <td class="index-cell">{{ index + 1 }}</td>
+                <td>
+                  <strong>{{ user.full_name }}</strong>
+                </td>
+                <td>{{ user.email }}</td>
+                <td>{{ getRoleLabel(user.role) }}</td>
+                <td>
+                  <span class="status-badge" [class.active]="user.is_active" [class.inactive]="!user.is_active">
+                    {{ user.is_active ? 'Hoạt động' : 'Đã khóa' }}
+                  </span>
+                </td>
+                <td>
+                  @if (user.email !== 'admin@ocop.vn') {
+                    <div class="row-actions">
+                      <button class="edit-button" type="button" (click)="openEditForm(user)">Sửa</button>
+                      <button class="delete-button" type="button" (click)="openDeleteConfirm(user)">Xóa</button>
+                    </div>
+                  } @else {
+                    <em>Mặc định</em>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</section>
+
+@if (showForm) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal form-modal" role="dialog" aria-modal="true" aria-label="Tài khoản">
+      <header>
+        <p class="eyebrow">Tài khoản hệ thống</p>
+        <h2>{{ formMode === 'create' ? 'Tạo tài khoản' : 'Cập nhật tài khoản' }}</h2>
+      </header>
+
+      <form class="auth-form" (ngSubmit)="submitForm()" #userForm="ngForm">
+        <div class="form-fields">
+          <label>
+            <span>Họ tên <span class="required">*</span></span>
+            <input name="full_name" type="text" [(ngModel)]="form.full_name" required />
+          </label>
+
+          <div class="form-group">
+            <label>
+              <span>Email <span class="required">*</span></span>
+              <input name="email" type="email" [(ngModel)]="form.email" required email #emailInput="ngModel" />
+            </label>
+            @if (emailInput.invalid && (emailInput.dirty || emailInput.touched)) {
+              @if (emailInput.errors?.['email']) {
+                <span class="field-error">Email không đúng định dạng</span>
+              }
+            }
+          </div>
+
+          @if (formMode === 'create') {
+            <label>
+              <span>Mật khẩu <span class="required">*</span></span>
+              <div class="password-input-wrapper">
+                <input name="password" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="form.password" required minlength="6" #pwd="ngModel" />
+                <button type="button" class="toggle-password-btn" (click)="showPassword = !showPassword" tabindex="-1">
+                  {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                </button>
+              </div>
+              @if (pwd.invalid && pwd.touched) {
+                <span class="field-error">Mật khẩu bắt buộc và tối thiểu 6 ký tự.</span>
+              }
+            </label>
+          }
+
+          <label>
+            <span>Vai trò <span class="required">*</span></span>
+            <select name="role" [(ngModel)]="form.role">
+              @for (role of roles; track role.value) {
+                <option [ngValue]="role.value">{{ role.label }}</option>
+              }
+            </select>
+          </label>
+
+          @if (formMode === 'edit') {
+            <label class="checkbox-label">
+              <input type="checkbox" name="is_active" [(ngModel)]="form.is_active" />
+              Tài khoản đang hoạt động
+            </label>
+          }
+        </div>
+
+        <footer>
+          <button class="cancel-delete-button" type="button" (click)="closeForm()">Hủy</button>
+          <button class="create-button" type="submit" [disabled]="userForm.invalid || isLoading">
+            {{ isLoading ? 'Đang xử lý...' : 'Lưu' }}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}
+
+@if (deletingUser) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-label="Xác nhận xóa người dùng">
+      <header>
+        <p class="eyebrow">Xác nhận xóa</p>
+        <h2>Xóa người dùng?</h2>
+      </header>
+      <p>
+        Bạn có chắc muốn xóa người dùng <strong>{{ deletingUser.full_name }}</strong> ({{ deletingUser.email }}) không?
+        Hành động này không thể hoàn tác.
+      </p>
+      <footer>
+        <button class="cancel-delete-button" type="button" (click)="deletingUser = null">Hủy</button>
+        <button class="confirm-delete-button" type="button" (click)="confirmDelete()">Xóa</button>
+      </footer>
+    </section>
+  </div>
+}

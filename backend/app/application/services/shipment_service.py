@@ -66,6 +66,51 @@ class ShipmentService:
             await self.shipment_repository.save_item(item)
         return await self.get_with_items(saved.id)
 
+    async def list_shipments(self):
+        shipments = await self.shipment_repository.find_all()
+        return [await self._shipment_with_items(shipment) for shipment in shipments]
+
+    async def update_shipment(self, shipment_id: str, data):
+        await self.get_by_id(shipment_id)
+        await self._validate_foreign_keys(data)
+        await self._validate_items(data.items, shipment_id)
+        self._validate_required_text(data.origin, "Shipment origin")
+        self._validate_required_text(data.destination, "Shipment destination")
+        if data.end_time and data.end_time < data.start_time:
+            raise ValueError("Shipment end_time must be after start_time")
+
+        shipment = Shipment(
+            id=shipment_id,
+            from_actor_id=data.from_actor_id,
+            to_actor_id=data.to_actor_id,
+            carrier_id=data.carrier_id,
+            origin=data.origin,
+            destination=data.destination,
+            status=self._parse_status(data.status),
+            start_time=data.start_time,
+            end_time=data.end_time,
+            notes=data.notes,
+        )
+        saved = await self.shipment_repository.update(shipment)
+        items = [
+            ShipmentItem(
+                id=item_data.id or str(uuid.uuid4()),
+                shipment_id=shipment_id,
+                batch_id=item_data.batch_id,
+                container_id=item_data.container_id,
+                quantity=item_data.quantity,
+                quantity_unit=item_data.quantity_unit,
+            )
+            for item_data in data.items
+        ]
+        await self.shipment_repository.replace_items(shipment_id, items)
+        return await self.get_with_items(saved.id)
+
+    async def delete_shipment(self, shipment_id: str):
+        await self.get_by_id(shipment_id)
+        await self.shipment_repository.delete(shipment_id)
+        return {"message": "Shipment deleted successfully"}
+
     async def get_by_batch_id(self, batch_id: str):
         shipments = await self.shipment_repository.find_by_batch_id(batch_id)
         return [await self._shipment_with_items(shipment) for shipment in shipments]

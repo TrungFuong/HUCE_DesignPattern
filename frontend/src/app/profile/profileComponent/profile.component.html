@@ -1,0 +1,121 @@
+<section class="profile-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Tài khoản</p>
+      <h1>Thông tin cá nhân</h1>
+    </div>
+  </header>
+
+  <section class="profile-panel">
+    @if (isLoading) {
+      <p class="empty-state">Đang tải thông tin cá nhân...</p>
+    } @else if (error) {
+      <p class="notice error">{{ error }}</p>
+    } @else if (user) {
+      <div class="profile-card">
+        <div class="profile-avatar">
+          <div class="avatar-circle">
+            {{ user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U' }}
+          </div>
+        </div>
+        
+        <div class="profile-details">
+          <div class="detail-group">
+            <label>Họ và tên</label>
+            <p class="value"><strong>{{ user.full_name }}</strong></p>
+          </div>
+
+          <div class="detail-group">
+            <label>Địa chỉ Email</label>
+            <p class="value">{{ user.email }}</p>
+          </div>
+
+          <div class="detail-group">
+            <label>Vai trò hệ thống</label>
+            <p class="value role-badge">{{ getRoleLabel(user.role) }}</p>
+          </div>
+
+          <div class="detail-group">
+            <label>Trạng thái tài khoản</label>
+            <p class="value">
+              <span class="status-badge" [class.active]="user.is_active" [class.inactive]="!user.is_active">
+                {{ user.is_active ? 'Hoạt động bình thường' : 'Đã khóa' }}
+              </span>
+            </p>
+          </div>
+
+          <div class="detail-group">
+            <label>Ngày đăng ký</label>
+            <p class="value">{{ user.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+
+          @if (user.email !== 'admin@ocop.vn') {
+            <div class="detail-group action-group">
+              <button class="change-password-button" type="button" (click)="openChangePassword()">Đổi mật khẩu</button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </section>
+</section>
+
+@if (showChangePasswordModal) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal form-modal" role="dialog" aria-modal="true" aria-label="Đổi mật khẩu">
+      <header>
+        <p class="eyebrow">Bảo mật</p>
+        <h2>Đổi mật khẩu</h2>
+      </header>
+
+      @if (passwordMessage) {
+        <p class="notice success">{{ passwordMessage }}</p>
+      }
+
+      <form class="auth-form" (ngSubmit)="submitChangePassword()" #pwdForm="ngForm">
+        <div class="form-fields">
+          <label>
+            <span>Mật khẩu cũ <span class="required">*</span></span>
+            <div class="password-input-wrapper">
+              <input name="old_password" [type]="showOldPassword ? 'text' : 'password'" [(ngModel)]="passwordForm.old_password" required />
+              <button type="button" class="toggle-password-btn" (click)="showOldPassword = !showOldPassword" tabindex="-1">
+                {{ showOldPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+          </label>
+
+          <label>
+            <span>Mật khẩu mới <span class="required">*</span></span>
+            <div class="password-input-wrapper">
+              <input name="new_password" [type]="showNewPassword ? 'text' : 'password'" [(ngModel)]="passwordForm.new_password" required minlength="6" />
+              <button type="button" class="toggle-password-btn" (click)="showNewPassword = !showNewPassword" tabindex="-1">
+                {{ showNewPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+          </label>
+
+          <label>
+            <span>Nhập lại mật khẩu mới <span class="required">*</span></span>
+            <div class="password-input-wrapper">
+              <input name="confirm_password" [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="passwordForm.confirm_password" required minlength="6" />
+              <button type="button" class="toggle-password-btn" (click)="showConfirmPassword = !showConfirmPassword" tabindex="-1">
+                {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+          </label>
+
+          @if (passwordError) {
+            <span class="field-error">{{ passwordError }}</span>
+          }
+        </div>
+
+        <footer>
+          <button class="cancel-button" type="button" (click)="closeChangePassword()">Hủy</button>
+          <button class="submit-button" type="submit" [disabled]="pwdForm.invalid || isSubmittingPassword">
+            {{ isSubmittingPassword ? 'Đang xử lý...' : 'Cập nhật' }}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}

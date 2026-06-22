@@ -28,7 +28,7 @@ export class CreateUpdateRiskRulesComponent implements OnChanges {
     if (changes['riskRule']) {
       this.form = this.riskRule
         ? {
-            crop_type_ids: [this.riskRule.crop_type_id],
+            crop_type_id: this.riskRule.crop_type_id,
             min_temperature: this.riskRule.min_temperature,
             max_temperature: this.riskRule.max_temperature,
             min_humidity: this.riskRule.min_humidity,
@@ -43,7 +43,7 @@ export class CreateUpdateRiskRulesComponent implements OnChanges {
 
   submit(): void {
     this.save.emit({
-      crop_type_ids: this.form.crop_type_ids,
+      crop_type_id: this.form.crop_type_id,
       min_temperature: Number(this.form.min_temperature),
       max_temperature: Number(this.form.max_temperature),
       min_humidity: Number(this.form.min_humidity),
@@ -54,14 +54,9 @@ export class CreateUpdateRiskRulesComponent implements OnChanges {
     });
   }
 
-  updateCropTypeSelection(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    this.form.crop_type_ids = Array.from(selectElement.selectedOptions).map((option) => option.value);
-  }
-
   private createEmptyForm(): RiskRuleFormValue {
     return {
-      crop_type_ids: [],
+      crop_type_id: '',
       min_temperature: 0,
       max_temperature: 40,
       min_humidity: 0,

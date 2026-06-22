@@ -27,14 +27,40 @@ async def create_shipment(
         return await shipment_service.create_shipment(request)
 
 
+@router.get("/")
+async def list_shipments():
+    async with get_async_session() as session:
+        shipment_service = ShipmentService(SqlShipmentRepository(session), SqlBatchRepository(session))
+        return await shipment_service.list_shipments()
+
+
 @router.get("/{shipment_id}")
 async def get_shipment(
     shipment_id: str,
     current_user: dict = Depends(get_current_user),
 ):
     async with get_async_session() as session:
-        shipment_service = ShipmentService(SqlShipmentRepository(session))
+        shipment_service = ShipmentService(SqlShipmentRepository(session), SqlBatchRepository(session))
         return await shipment_service.get_with_items(shipment_id)
+
+
+@router.put("/{shipment_id}")
+async def update_shipment(shipment_id: str, request: CreateShipmentRequest):
+    async with get_async_session() as session:
+        shipment_service = ShipmentService(
+            SqlShipmentRepository(session),
+            SqlBatchRepository(session),
+            SqlUserRepository(session),
+            SqlContainerRepository(session),
+        )
+        return await shipment_service.update_shipment(shipment_id, request)
+
+
+@router.delete("/{shipment_id}")
+async def delete_shipment(shipment_id: str):
+    async with get_async_session() as session:
+        shipment_service = ShipmentService(SqlShipmentRepository(session), SqlBatchRepository(session))
+        return await shipment_service.delete_shipment(shipment_id)
 
 
 @router.get("/batch/{batch_id}")
@@ -43,5 +69,5 @@ async def get_shipments_by_batch(
     current_user: dict = Depends(get_current_user),
 ):
     async with get_async_session() as session:
-        shipment_service = ShipmentService(SqlShipmentRepository(session))
+        shipment_service = ShipmentService(SqlShipmentRepository(session), SqlBatchRepository(session))
         return await shipment_service.get_by_batch_id(batch_id)

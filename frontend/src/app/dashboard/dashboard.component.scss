@@ -79,14 +79,11 @@ p {
 }
 
 .side-menu a,
-.logout-button {
+.logout-button,
+.profile-button {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.side-menu a,
-.logout-button {
   border: 0;
   border-radius: 8px;
   cursor: pointer;
@@ -104,7 +101,9 @@ p {
 }
 
 .side-menu a.active,
-.side-menu a:hover {
+.side-menu a:hover,
+.profile-button.active,
+.profile-button:hover {
   color: #ffffff;
   background: #2f6f3e;
 }
@@ -119,11 +118,26 @@ p {
   background: rgba(47, 111, 62, 0.12);
 }
 
+.bottom-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.profile-button {
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  color: #24472e;
+  background: #dbe8d5;
+  text-decoration: none;
+}
+
 .logout-button {
   justify-content: center;
   width: 100%;
   min-height: 44px;
-  margin-top: auto;
   color: #8a2727;
   background: #fde8e8;
 }
