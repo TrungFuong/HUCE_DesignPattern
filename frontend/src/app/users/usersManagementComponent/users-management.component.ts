@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { User } from '../user.model';
 import { UsersService } from '../users.service';
-import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-users-management',
@@ -14,7 +13,6 @@ import { AuthService } from '../../auth.service';
 })
 export class UsersManagementComponent implements OnInit {
   private readonly usersService = inject(UsersService);
-  private readonly authService = inject(AuthService);
 
   users: User[] = [];
   isLoading = false;
@@ -130,7 +128,7 @@ export class UsersManagementComponent implements OnInit {
     this.isLoading = true;
 
     if (this.formMode === 'create') {
-      this.authService.register({
+      this.usersService.createUser({
         full_name: this.form.full_name.trim(),
         email: this.form.email.trim(),
         password: this.form.password,

@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, of, tap } from 'rxjs';
+import { User } from './users/user.model';
 
 export type AuthMode = 'login' | 'register';
 
@@ -25,6 +26,9 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = 'http://localhost:8000';
   private readonly storageKey = 'ocop_access_token';
+  private readonly currentUserSubject = new BehaviorSubject<User | null>(null);
+
+  readonly currentUser$ = this.currentUserSubject.asObservable();
 
   login(payload: LoginRequest): Observable<AuthResponse> {
     return this.http
@@ -42,10 +46,10 @@ export class AuthService {
     return localStorage.getItem(this.storageKey);
   }
 
-  getMe(): Observable<any> {
-    const token = this.getToken();
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.apiBaseUrl}/auth/me`, { headers });
+  getMe(): Observable<User> {
+    return this.http.get<User>(`${this.apiBaseUrl}/auth/me`).pipe(
+      tap((user) => this.currentUserSubject.next(user)),
+    );
   }
 
   changePassword(payload: any): Observable<any> {
@@ -56,6 +60,30 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.storageKey);
+    this.currentUserSubject.next(null);
+  }
+
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  getRole(): number | null {
+    return this.currentUserSubject.value?.role ?? null;
+  }
+
+  ensureCurrentUser(): Observable<User | null> {
+    if (this.currentUserSubject.value) {
+      return of(this.currentUserSubject.value);
+    }
+    if (!this.getToken()) {
+      return of(null);
+    }
+    return this.getMe().pipe(
+      catchError(() => {
+        this.logout();
+        return of(null);
+      }),
+    );
   }
 
   private persistToken(response: AuthResponse): void {
