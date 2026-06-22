@@ -23,6 +23,7 @@ export class CreateUpdateShipmentsComponent implements OnChanges {
   @Input() containers: Container[] = [];
   @Input() containersError = '';
   @Input() isLoadingContainers = false;
+  @Input() isSaving = false;
 
   @Output() cancel = new EventEmitter<void>();
   @Output() save = new EventEmitter<ShipmentPayload>();
@@ -50,6 +51,18 @@ export class CreateUpdateShipmentsComponent implements OnChanges {
 
   get carrierUsers(): User[] {
     return this.users.filter((user) => user.is_active && user.role === 2);
+  }
+
+  get selectableContainers(): Container[] {
+    const existingContainerIds = new Set(
+      this.shipment?.items.map((item) => item.container_id) ?? [],
+    );
+    return this.containers.filter(
+      (container) =>
+        Number(container.status) === 0 ||
+        Number(container.status) === 1 ||
+        existingContainerIds.has(container.id),
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -90,6 +103,9 @@ export class CreateUpdateShipmentsComponent implements OnChanges {
   }
 
   submit(): void {
+    if (this.isSaving) {
+      return;
+    }
     const payload: ShipmentPayload = {
       id: this.shipment?.id,
       from_actor_id: this.form.from_actor_id,

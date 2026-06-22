@@ -5,6 +5,11 @@ export interface ShipmentItem {
   container_id: string;
   quantity: number;
   quantity_unit: string;
+  product_name?: string | null;
+  container_code?: string | null;
+  container_type?: string | null;
+  container_capacity?: number | null;
+  container_capacity_unit?: string | null;
 }
 
 export interface Shipment {

@@ -65,12 +65,12 @@
                 <tr>
                   <td class="index-cell">{{ index + 1 }}</td>
                   <td>
-                    <strong>{{ getBatchLabel(item.batch_id) }}</strong>
+                    <strong>{{ getBatchLabel(item) }}</strong>
                   </td>
                   <td>
-                    <strong>{{ getContainerLabel(item.container_id) }}</strong>
+                    <strong>{{ getContainerLabel(item) }}</strong>
                   </td>
-                  <td>{{ getContainerCapacity(item.container_id) }}</td>
+                  <td>{{ getContainerCapacity(item) }}</td>
                   <td>{{ item.quantity }}</td>
                   <td>{{ item.quantity_unit }}</td>
                 </tr>

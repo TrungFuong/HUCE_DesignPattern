@@ -11,6 +11,7 @@ import { CreateUpdateShipmentsComponent } from '../createUpdateShipmentsComponen
 import { Shipment, ShipmentPayload } from '../shipment.model';
 import { ShipmentsService } from '../shipments.service';
 import { ViewDetailShipmentsComponent } from '../viewDetailShipmentsComponent/view-detail-shipments.component';
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-shipments-management',
@@ -24,6 +25,7 @@ export class ShipmentsManagementComponent implements OnInit {
   private readonly batchesService = inject(BatchesService);
   private readonly usersService = inject(UsersService);
   private readonly containersService = inject(ContainersService);
+  private readonly authService = inject(AuthService);
 
   currentPage = 1;
   readonly pageSize = 5;
@@ -39,12 +41,17 @@ export class ShipmentsManagementComponent implements OnInit {
   isLoadingBatches = false;
   isLoadingUsers = false;
   isLoadingContainers = false;
+  isSaving = false;
   editingShipment: Shipment | null = null;
   viewingShipment: Shipment | null = null;
   deletingShipment: Shipment | null = null;
   isFormOpen = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
+
+  get isReadOnly(): boolean {
+    return this.authService.getRole() === 3;
+  }
 
   readonly statusLabels: Record<number, string> = {
     0: 'Đã tạo',
@@ -55,9 +62,11 @@ export class ShipmentsManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadShipments();
-    this.loadBatches();
     this.loadUsers();
-    this.loadContainers();
+    if (!this.isReadOnly) {
+      this.loadBatches();
+      this.loadContainers();
+    }
   }
 
   get totalPages(): number {
@@ -120,7 +129,7 @@ export class ShipmentsManagementComponent implements OnInit {
   loadUsers(): void {
     this.isLoadingUsers = true;
     this.usersError = '';
-    this.usersService.getUsers().subscribe({
+    this.usersService.getUserLookup().subscribe({
       next: (users) => {
         this.users = users;
         this.isLoadingUsers = false;
@@ -150,11 +159,17 @@ export class ShipmentsManagementComponent implements OnInit {
   }
 
   openCreateForm(): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.editingShipment = null;
     this.isFormOpen = true;
   }
 
   openEditForm(shipment: Shipment): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.editingShipment = shipment;
     this.isFormOpen = true;
   }
@@ -171,6 +186,9 @@ export class ShipmentsManagementComponent implements OnInit {
   }
 
   openDeleteConfirm(shipment: Shipment): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.deletingShipment = shipment;
   }
 
@@ -180,6 +198,10 @@ export class ShipmentsManagementComponent implements OnInit {
   }
 
   saveShipment(value: ShipmentPayload): void {
+    if (this.isReadOnly || this.isSaving) {
+      return;
+    }
+    this.isSaving = true;
     const isEdit = Boolean(this.editingShipment);
     const request$ = this.editingShipment
       ? this.shipmentsService.updateShipment(this.editingShipment.id, value)
@@ -187,18 +209,20 @@ export class ShipmentsManagementComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.isSaving = false;
         this.closeForm();
         this.showToast(isEdit ? 'Cập nhật shipment thành công.' : 'Tạo mới shipment thành công.');
         this.loadShipments();
       },
       error: (error: HttpErrorResponse) => {
+        this.isSaving = false;
         this.showToast(this.getErrorMessage(error), 'error');
       },
     });
   }
 
   confirmDelete(): void {
-    if (!this.deletingShipment) {
+    if (this.isReadOnly || !this.deletingShipment) {
       return;
     }
 

@@ -77,6 +77,7 @@
 @if (isFormOpen) {
   <app-create-update-containers
     [container]="editingContainer"
+    [isSaving]="isSaving"
     (cancel)="closeForm()"
     (save)="saveContainer($event)"
   />

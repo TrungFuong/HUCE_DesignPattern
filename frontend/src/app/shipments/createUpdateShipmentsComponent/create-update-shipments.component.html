@@ -129,7 +129,7 @@
                       required
                     >
                       <option value="" disabled>{{ isLoadingContainers ? 'Đang tải container...' : 'Chọn container' }}</option>
-                      @for (container of containers; track container.id) {
+                      @for (container of selectableContainers; track container.id) {
                         <option [value]="container.id">{{ getContainerLabel(container) }}</option>
                       }
                     </select>
@@ -166,7 +166,9 @@
 
       <footer class="modal-actions full-span">
         <button type="button" class="secondary-button" (click)="cancelForm()">Hủy</button>
-        <button type="submit" class="primary-button" [disabled]="shipmentForm.invalid">Lưu</button>
+        <button type="submit" class="primary-button" [disabled]="shipmentForm.invalid || isSaving">
+          {{ isSaving ? 'Đang lưu...' : 'Lưu' }}
+        </button>
       </footer>
     </form>
   </section>

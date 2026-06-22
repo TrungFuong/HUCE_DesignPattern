@@ -8,16 +8,20 @@
   <header class="page-header">
     <div>
       <p class="eyebrow">Danh mục vận chuyển</p>
-      <h1>Quản lý shipment</h1>
+      <h1>{{ isReadOnly ? 'Vận chuyển của tôi' : 'Quản lý vận chuyển' }}</h1>
     </div>
-    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    @if (!isReadOnly) {
+      <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    }
   </header>
 
   <section class="table-panel">
     @if (isLoading) {
       <p class="empty-state">Đang tải danh sách shipment...</p>
     } @else if (!shipments.length) {
-      <p class="empty-state">Chưa có shipment nào. Hãy tạo mới bản ghi đầu tiên.</p>
+      <p class="empty-state">
+        {{ isReadOnly ? 'Chưa có chuyến vận chuyển nào gửi đến bạn.' : 'Chưa có chuyến vận chuyển nào. Hãy tạo mới bản ghi đầu tiên.' }}
+      </p>
     } @else {
       <div class="table-wrap">
         <table>
@@ -53,8 +57,10 @@
                 <td class="actions-cell">
                   <div class="row-actions">
                     <button class="view-button" type="button" (click)="openDetail(shipment)">Xem chi tiết</button>
-                    <button class="edit-button" type="button" (click)="openEditForm(shipment)">Sửa</button>
-                    <button class="delete-button" type="button" (click)="openDeleteConfirm(shipment)">Xóa</button>
+                    @if (!isReadOnly) {
+                      <button class="edit-button" type="button" (click)="openEditForm(shipment)">Sửa</button>
+                      <button class="delete-button" type="button" (click)="openDeleteConfirm(shipment)">Xóa</button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -90,6 +96,7 @@
     [containers]="containers"
     [containersError]="containersError"
     [isLoadingContainers]="isLoadingContainers"
+    [isSaving]="isSaving"
     (cancel)="closeForm()"
     (save)="saveShipment($event)"
   />
