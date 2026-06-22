@@ -14,6 +14,7 @@ class TraceabilityFacade:
         hash_service,
         user_service=None,
         container_service=None,
+        crop_type_service=None,
         trace_response_builder: TraceResponseBuilder | None = None,
     ):
         self.batch_service = batch_service
@@ -24,6 +25,7 @@ class TraceabilityFacade:
         self.hash_service = hash_service
         self.user_service = user_service
         self.container_service = container_service
+        self.crop_type_service = crop_type_service
         self.trace_response_builder = trace_response_builder or TraceResponseBuilder()
 
     async def trace_batch(self, batch_id: str):
@@ -62,6 +64,7 @@ class TraceabilityFacade:
             "sensor_logs": [to_plain_data(log) for log in sensor_logs],
         })
         blockchain_hash = await self.blockchain_service.get_hash(batch_id)
+        crop_type_name = await self._get_crop_type_name(batch.crop_type_id)
         return {
             "product": {
                 "name": batch.product_name,
@@ -69,6 +72,7 @@ class TraceabilityFacade:
                 "quantity": batch.quantity,
                 "quantity_unit": batch.quantity_unit,
                 "grade": batch.grade,
+                "crop_type": crop_type_name,
                 "status": batch.status.name,
                 "risk_level": batch.risk_level.name,
             },
@@ -142,6 +146,15 @@ class TraceabilityFacade:
         try:
             return await self.container_service.get_by_id(container_id)
         except ValueError:
+            return None
+
+    async def _get_crop_type_name(self, crop_type_id: str | None) -> str | None:
+        if self.crop_type_service is None or not crop_type_id:
+            return None
+        try:
+            crop_type = await self.crop_type_service.get_by_id(crop_type_id)
+            return crop_type.name
+        except (ValueError, Exception):
             return None
 
     def _public_user(self, user):

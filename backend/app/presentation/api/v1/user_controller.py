@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
 from app.application.services.user_service import UserService
+from app.core.dependencies import get_current_user
 from app.infrastructure.database.sqlserver.repositories.sql_user_repository import SqlUserRepository
 from app.infrastructure.database.sqlserver.session import get_async_session
 
@@ -8,15 +9,27 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("/")
-async def list_users(role: int | None = Query(default=None)):
+async def list_users(
+    role: int | None = Query(default=None),
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         user_service = UserService(SqlUserRepository(session))
         users = await user_service.list_users(role)
         return [to_user_response(user) for user in users]
 
 
+@router.get("/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    """Lấy thông tin user hiện đang đăng nhập từ JWT token."""
+    return current_user
+
+
 @router.get("/{user_id}")
-async def get_user(user_id: str):
+async def get_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         user_service = UserService(SqlUserRepository(session))
         user = await user_service.get_by_id(user_id)
