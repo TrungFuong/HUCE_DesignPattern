@@ -44,7 +44,9 @@ class AuthService:
         )
         await self.user_repository.save(user)
         expires = datetime.utcnow() + timedelta(minutes=60)
-        token = create_access_token({"sub": user.email, "role": int(user.role)})
+        token = create_access_token(
+            {"sub": user.email, "user_id": user.id, "role": int(user.role)}
+        )
         return {
             "access_token": token,
             "token_type": "bearer",
@@ -66,7 +68,9 @@ class AuthService:
         if not user.is_active:
             raise ValueError("User account is inactive")
         expires = datetime.utcnow() + timedelta(minutes=60)
-        token = create_access_token({"sub": user.email, "role": int(user.role)})
+        token = create_access_token(
+            {"sub": user.email, "user_id": user.id, "role": int(user.role)}
+        )
         return {
             "access_token": token,
             "token_type": "bearer",

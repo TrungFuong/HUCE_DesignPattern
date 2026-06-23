@@ -14,7 +14,8 @@ class BlockchainProxy(BlockchainClient):
         try:
             cached_hash = await self.cache_client.get(cache_key)
             if cached_hash:
-                return cached_hash.decode() if isinstance(cached_hash, bytes) else cached_hash
+                # decode_responses=True → Redis always returns str, not bytes
+                return cached_hash
         except RedisError:
             cached_hash = None
         blockchain_hash = await self.blockchain_client.get_hash(batch_id)

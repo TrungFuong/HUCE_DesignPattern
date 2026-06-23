@@ -1,7 +1,8 @@
 from functools import lru_cache
 from typing import AsyncGenerator, Callable
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -32,13 +33,13 @@ from app.application.observers.risk_observer import RiskObserver
 from app.application.services.batch_service import BatchService
 from app.application.services.blockchain_service import BlockchainService
 from app.application.services.container_service import ContainerService
+from app.application.services.crop_type_service import CropTypeService
 from app.application.services.farm_service import FarmService
 from app.application.services.risk_service import RiskService
 from app.application.services.sensor_service import SensorService
 from app.application.services.shipment_service import ShipmentService
 from app.application.services.user_service import UserService
 from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
-from app.domain.entities.user import User
 from app.domain.enums.role import RoleName
 
 
@@ -60,31 +61,45 @@ async def get_redis():
     yield get_redis_client()
 
 
+_http_bearer = HTTPBearer(auto_error=False)
+
+
 async def get_current_user(
-    authorization: str | None = Header(default=None),
+    credentials: HTTPAuthorizationCredentials | None = Depends(_http_bearer),
     db_session: AsyncSession = Depends(get_db_session),
-) -> User:
-    if not authorization or not authorization.lower().startswith("bearer "):
+) -> dict:
+    if not credentials:
         raise HTTPException(status_code=401, detail="Authorization header required")
-    token = authorization.split(" ", 1)[1].strip()
-    if not token:
-        raise HTTPException(status_code=401, detail="Invalid token")
     try:
-        payload = decode_access_token(token)
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        payload = decode_access_token(credentials.credentials)
+    except ValueError as error:
+        raise HTTPException(status_code=401, detail="Invalid or expired token") from error
+
     email = payload.get("sub")
     if not email:
         raise HTTPException(status_code=401, detail="Invalid token")
+
     user = await SqlUserRepository(db_session).find_by_email(email)
     if user is None or not user.is_active:
         raise HTTPException(status_code=401, detail="User account is unavailable")
-    return user
+
+    return {
+        **payload,
+        "id": user.id,
+        "sub": user.email,
+        "email": user.email,
+        "full_name": user.full_name,
+        "role": int(user.role),
+        "is_active": user.is_active,
+        "created_at": user.created_at,
+    }
 
 
-def require_roles(*allowed_roles: RoleName) -> Callable:
-    async def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in allowed_roles:
+def require_roles(*allowed_roles: RoleName | int) -> Callable:
+    allowed_role_values = {int(role) for role in allowed_roles}
+
+    async def role_checker(current_user: dict = Depends(get_current_user)) -> dict:
+        if current_user.get("role") not in allowed_role_values:
             raise HTTPException(status_code=403, detail="You do not have permission to perform this action")
         return current_user
 
@@ -123,6 +138,7 @@ def get_batch_service(db_session: AsyncSession = Depends(get_db_session)) -> Bat
         batch_repository=SqlBatchRepository(db_session),
         qr_service=get_qr_service(),
         farm_repository=SqlFarmRepository(db_session),
+        crop_type_repository=SqlCropTypeRepository(db_session),
         shipment_repository=SqlShipmentRepository(db_session),
     )
 
@@ -163,6 +179,14 @@ def get_risk_service(db_session: AsyncSession = Depends(get_db_session)) -> Risk
     return RiskService(risk_rule_repository=SqlRiskRuleRepository(db_session))
 
 
+def get_crop_type_service(db_session: AsyncSession = Depends(get_db_session)) -> CropTypeService:
+    return CropTypeService(
+        crop_type_repository=SqlCropTypeRepository(db_session),
+        batch_repository=SqlBatchRepository(db_session),
+        risk_rule_repository=SqlRiskRuleRepository(db_session),
+    )
+
+
 def get_traceability_facade(
     db_session: AsyncSession = Depends(get_db_session),
     mongo_db=Depends(get_mongo_db),
@@ -176,6 +200,7 @@ def get_traceability_facade(
         hash_service=get_hash_service(),
         user_service=get_user_service(db_session),
         container_service=get_container_service(db_session),
+        crop_type_service=get_crop_type_service(db_session),
         trace_response_builder=TraceResponseBuilder(),
     )
 

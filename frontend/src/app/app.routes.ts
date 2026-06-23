@@ -9,6 +9,7 @@ import { ShipmentsManagementComponent } from './shipments/shipmentsManagementCom
 import { ContainersManagementComponent } from './containers/containersManagementComponent/containers-management.component';
 import { UsersManagementComponent } from './users/usersManagementComponent/users-management.component';
 import { ProfileComponent } from './profile/profileComponent/profile.component';
+import { SensorsPlaceholderComponent } from './sensors/sensors-placeholder.component';
 import { roleGuard } from './role.guard';
 
 export const routes: Routes = [
@@ -22,7 +23,7 @@ export const routes: Routes = [
   { path: 'shipments', component: ShipmentsManagementComponent, canActivate: [roleGuard], data: { roles: [0, 2, 3] } },
   { path: 'users', component: UsersManagementComponent, canActivate: [roleGuard], data: { roles: [0] } },
   { path: 'profile', component: ProfileComponent, canActivate: [roleGuard], data: { roles: [0, 1, 2, 3] } },
-  { path: 'sensors', redirectTo: '' },
+  { path: 'sensors', component: SensorsPlaceholderComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
   { path: 'reports', redirectTo: '' },
   { path: '**', redirectTo: '' },
 ];
