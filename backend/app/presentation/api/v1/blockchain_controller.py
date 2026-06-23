@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.application.services.blockchain_service import BlockchainService
-from app.core.dependencies import get_blockchain_service, get_current_user
+from app.core.dependencies import get_blockchain_service, require_roles
+from app.domain.enums.role import RoleName
 
 router = APIRouter(prefix="/blockchain", tags=["Blockchain"])
 
@@ -10,7 +11,7 @@ router = APIRouter(prefix="/blockchain", tags=["Blockchain"])
 async def verify_batch_hash(
     batch_id: str,
     blockchain_service: BlockchainService = Depends(get_blockchain_service),
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(RoleName.ADMIN)),
 ):
     """
     Lấy hash đang lưu trên blockchain cho batch_id.

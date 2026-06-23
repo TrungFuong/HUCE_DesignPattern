@@ -6,3 +6,10 @@ class UpdateUserRequest(BaseModel):
     email: Optional[str] = None
     role: Optional[int] = None
     is_active: Optional[bool] = None
+
+
+class CreateUserRequest(BaseModel):
+    full_name: str
+    email: str
+    password: str
+    role: int

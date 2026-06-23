@@ -3,6 +3,13 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { User } from './user.model';
 
+export interface CreateUserPayload {
+  full_name: string;
+  email: string;
+  password: string;
+  role: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   private readonly http = inject(HttpClient);
@@ -14,6 +21,14 @@ export class UsersService {
 
   getFarmers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiBaseUrl}/users/?role=1`);
+  }
+
+  getUserLookup(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiBaseUrl}/users/lookup`);
+  }
+
+  createUser(payload: CreateUserPayload): Observable<User> {
+    return this.http.post<User>(`${this.apiBaseUrl}/users/`, payload);
   }
 
   updateUser(id: string, payload: Partial<User>): Observable<User> {

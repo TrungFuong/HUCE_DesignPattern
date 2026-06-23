@@ -84,8 +84,8 @@
 
       <footer class="modal-actions full-span">
         <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
-        <button class="primary-button" type="submit" [disabled]="containerForm.invalid">
-          {{ container ? 'Cập nhật' : 'Tạo mới' }}
+        <button class="primary-button" type="submit" [disabled]="containerForm.invalid || isSaving">
+          {{ isSaving ? 'Đang lưu...' : (container ? 'Cập nhật' : 'Tạo mới') }}
         </button>
       </footer>
     </form>

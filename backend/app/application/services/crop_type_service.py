@@ -3,12 +3,21 @@ import uuid
 from app.application.dto.crop_type_dto import CropTypeRequest
 from app.domain.entities.crop_type import CropType
 from app.domain.interfaces.repositories.crop_type_repository import CropTypeRepository
+from app.domain.interfaces.repositories.batch_repository import BatchRepository
+from app.domain.interfaces.repositories.risk_rule_repository import RiskRuleRepository
 
 
 class CropTypeService:
 
-    def __init__(self, crop_type_repository: CropTypeRepository):
+    def __init__(
+        self,
+        crop_type_repository: CropTypeRepository,
+        batch_repository: BatchRepository | None = None,
+        risk_rule_repository: RiskRuleRepository | None = None,
+    ):
         self.crop_type_repository = crop_type_repository
+        self.batch_repository = batch_repository
+        self.risk_rule_repository = risk_rule_repository
 
     async def create_crop_type(self, data: CropTypeRequest) -> CropType:
         code = self._normalize_code(data.code)
@@ -52,6 +61,10 @@ class CropTypeService:
 
     async def delete_crop_type(self, crop_type_id: str):
         await self.get_by_id(crop_type_id)
+        if self.batch_repository and await self.batch_repository.find_by_crop_type_id(crop_type_id):
+            raise ValueError("Không thể xóa loại nông sản đang được sử dụng bởi lô sản phẩm")
+        if self.risk_rule_repository and await self.risk_rule_repository.find_by_crop_type_id(crop_type_id):
+            raise ValueError("Không thể xóa loại nông sản đang được sử dụng bởi quy tắc rủi ro")
         await self.crop_type_repository.delete(crop_type_id)
         return {"message": "Crop type deleted successfully"}
 

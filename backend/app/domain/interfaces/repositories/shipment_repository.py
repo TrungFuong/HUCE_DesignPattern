@@ -14,6 +14,10 @@ class ShipmentRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_by_to_actor_id(self, actor_id: str) -> list[Shipment]:
+        pass
+
+    @abstractmethod
     async def save(self, shipment: Shipment) -> Shipment:
         pass
 

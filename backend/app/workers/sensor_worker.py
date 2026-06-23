@@ -77,4 +77,3 @@ class SensorWorker:
                 "reason": "SENSOR_LOG_SAVED",
             },
         )
-

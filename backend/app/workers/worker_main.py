@@ -29,4 +29,3 @@ if __name__ == "__main__":
         print("Usage: python -m app.workers.worker_main [sensor|blockchain|all]")
         sys.exit(1)
     asyncio.run(main(mode))
-

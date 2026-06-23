@@ -15,6 +15,7 @@ export class CreateUpdateRiskRulesComponent implements OnChanges {
   @Input() cropTypes: CropType[] = [];
   @Input() cropTypesError = '';
   @Input() isLoadingCropTypes = false;
+  @Input() isSaving = false;
   @Output() cancel = new EventEmitter<void>();
   @Output() save = new EventEmitter<RiskRuleFormValue>();
 
@@ -42,6 +43,9 @@ export class CreateUpdateRiskRulesComponent implements OnChanges {
   }
 
   submit(): void {
+    if (this.isSaving) {
+      return;
+    }
     this.save.emit({
       crop_type_id: this.form.crop_type_id,
       min_temperature: Number(this.form.min_temperature),

@@ -1,8 +1,8 @@
 from functools import lru_cache
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Callable
 
 from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -40,6 +40,7 @@ from app.application.services.sensor_service import SensorService
 from app.application.services.shipment_service import ShipmentService
 from app.application.services.user_service import UserService
 from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
+from app.domain.enums.role import RoleName
 
 
 @lru_cache()
@@ -65,14 +66,44 @@ _http_bearer = HTTPBearer(auto_error=False)
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_http_bearer),
+    db_session: AsyncSession = Depends(get_db_session),
 ) -> dict:
     if not credentials:
         raise HTTPException(status_code=401, detail="Authorization header required")
     try:
         payload = decode_access_token(credentials.credentials)
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-    return payload
+    except ValueError as error:
+        raise HTTPException(status_code=401, detail="Invalid or expired token") from error
+
+    email = payload.get("sub")
+    if not email:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = await SqlUserRepository(db_session).find_by_email(email)
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=401, detail="User account is unavailable")
+
+    return {
+        **payload,
+        "id": user.id,
+        "sub": user.email,
+        "email": user.email,
+        "full_name": user.full_name,
+        "role": int(user.role),
+        "is_active": user.is_active,
+        "created_at": user.created_at,
+    }
+
+
+def require_roles(*allowed_roles: RoleName | int) -> Callable:
+    allowed_role_values = {int(role) for role in allowed_roles}
+
+    async def role_checker(current_user: dict = Depends(get_current_user)) -> dict:
+        if current_user.get("role") not in allowed_role_values:
+            raise HTTPException(status_code=403, detail="You do not have permission to perform this action")
+        return current_user
+
+    return role_checker
 
 
 @lru_cache()
@@ -107,6 +138,8 @@ def get_batch_service(db_session: AsyncSession = Depends(get_db_session)) -> Bat
         batch_repository=SqlBatchRepository(db_session),
         qr_service=get_qr_service(),
         farm_repository=SqlFarmRepository(db_session),
+        crop_type_repository=SqlCropTypeRepository(db_session),
+        shipment_repository=SqlShipmentRepository(db_session),
     )
 
 
@@ -114,6 +147,7 @@ def get_farm_service(db_session: AsyncSession = Depends(get_db_session)) -> Farm
     return FarmService(
         farm_repository=SqlFarmRepository(db_session),
         user_repository=SqlUserRepository(db_session),
+        batch_repository=SqlBatchRepository(db_session),
     )
 
 
@@ -146,7 +180,11 @@ def get_risk_service(db_session: AsyncSession = Depends(get_db_session)) -> Risk
 
 
 def get_crop_type_service(db_session: AsyncSession = Depends(get_db_session)) -> CropTypeService:
-    return CropTypeService(crop_type_repository=SqlCropTypeRepository(db_session))
+    return CropTypeService(
+        crop_type_repository=SqlCropTypeRepository(db_session),
+        batch_repository=SqlBatchRepository(db_session),
+        risk_rule_repository=SqlRiskRuleRepository(db_session),
+    )
 
 
 def get_traceability_facade(

@@ -24,6 +24,7 @@ export class ContainersManagementComponent implements OnInit {
   deletingContainer: Container | null = null;
   isFormOpen = false;
   isLoading = false;
+  isSaving = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
 
@@ -103,6 +104,10 @@ export class ContainersManagementComponent implements OnInit {
   }
 
   saveContainer(value: ContainerPayload): void {
+    if (this.isSaving) {
+      return;
+    }
+    this.isSaving = true;
     const isEdit = Boolean(this.editingContainer);
     const request$ = this.editingContainer
       ? this.containersService.updateContainer(this.editingContainer.id, value)
@@ -110,11 +115,13 @@ export class ContainersManagementComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.isSaving = false;
         this.closeForm();
         this.showToast(isEdit ? 'Cập nhật container thành công.' : 'Tạo mới container thành công.');
         this.loadContainers();
       },
       error: (error: HttpErrorResponse) => {
+        this.isSaving = false;
         this.showToast(this.getErrorMessage(error), 'error');
       },
     });

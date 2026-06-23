@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Batch } from '../../batches/batch.model';
 import { Container } from '../../containers/container.model';
 import { User } from '../../users/user.model';
-import { Shipment } from '../shipment.model';
+import { Shipment, ShipmentItem } from '../shipment.model';
 
 @Component({
   selector: 'app-view-detail-shipments',
@@ -35,17 +35,25 @@ export class ViewDetailShipmentsComponent {
     return this.statusLabels[value] ?? String(status);
   }
 
-  getBatchLabel(batchId: string): string {
-    return batchId;
+  getBatchLabel(item: ShipmentItem): string {
+    return item.product_name
+      ?? this.batches.find((batch) => batch.id === item.batch_id)?.product_name
+      ?? item.batch_id;
   }
 
-  getContainerLabel(containerId: string): string {
-    const container = this.containers.find((currentContainer) => currentContainer.id === containerId);
-    return container ? `${container.code} - ${container.type}` : containerId;
+  getContainerLabel(item: ShipmentItem): string {
+    if (item.container_code) {
+      return `${item.container_code}${item.container_type ? ` - ${item.container_type}` : ''}`;
+    }
+    const container = this.containers.find((currentContainer) => currentContainer.id === item.container_id);
+    return container ? `${container.code} - ${container.type}` : item.container_id;
   }
 
-  getContainerCapacity(containerId: string): string {
-    const container = this.containers.find((currentContainer) => currentContainer.id === containerId);
+  getContainerCapacity(item: ShipmentItem): string {
+    if (item.container_capacity !== null && item.container_capacity !== undefined) {
+      return `${item.container_capacity} ${item.container_capacity_unit ?? ''}`.trim();
+    }
+    const container = this.containers.find((currentContainer) => currentContainer.id === item.container_id);
     return container ? `${container.capacity} ${container.capacity_unit}` : 'Chưa cập nhật';
   }
 }

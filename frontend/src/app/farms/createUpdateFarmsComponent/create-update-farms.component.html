@@ -11,7 +11,12 @@
     <form class="farm-form" (ngSubmit)="submit()" #farmForm="ngForm">
       <label>
         Chủ nông trại
-        <select name="owner_id" [(ngModel)]="form.owner_id" [disabled]="isLoadingFarmers" required>
+        <select
+          name="owner_id"
+          [(ngModel)]="form.owner_id"
+          [disabled]="isLoadingFarmers || ownerLocked"
+          required
+        >
           <option value="" disabled>
             {{ isLoadingFarmers ? 'Đang tải danh sách nông dân...' : 'Chọn nông dân' }}
           </option>
@@ -49,8 +54,8 @@
 
       <footer class="modal-actions full-span">
         <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
-        <button class="primary-button" type="submit" [disabled]="farmForm.invalid">
-          {{ farm ? 'Cập nhật' : 'Tạo mới' }}
+        <button class="primary-button" type="submit" [disabled]="farmForm.invalid || isSaving">
+          {{ isSaving ? 'Đang lưu...' : (farm ? 'Cập nhật' : 'Tạo mới') }}
         </button>
       </footer>
     </form>

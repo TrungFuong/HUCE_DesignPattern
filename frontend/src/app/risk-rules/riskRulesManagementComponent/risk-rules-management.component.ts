@@ -28,6 +28,7 @@ export class RiskRulesManagementComponent implements OnInit {
   deletingRiskRule: RiskRule | null = null;
   isFormOpen = false;
   isLoading = false;
+  isSaving = false;
   isLoadingCropTypes = false;
   cropTypesError = '';
   toastMessage = '';
@@ -115,18 +116,26 @@ export class RiskRulesManagementComponent implements OnInit {
   }
 
   saveRiskRule(value: RiskRuleFormValue): void {
+    if (this.isSaving) {
+      return;
+    }
+    this.isSaving = true;
+    const isEdit = !!this.editingRiskRule;
     const request = this.editingRiskRule
       ? this.riskRulesService.updateRiskRule(this.editingRiskRule.id, this.toPayload(value))
       : this.riskRulesService.createRiskRule(this.toPayload(value));
 
     request.subscribe({
       next: () => {
-        const isEdit = !!this.editingRiskRule;
+        this.isSaving = false;
         this.closeForm();
         this.showToast(isEdit ? 'Cập nhật risk rule thành công.' : 'Tạo mới risk rule thành công.');
         this.loadRiskRules();
       },
-      error: (error: HttpErrorResponse) => this.showToast(this.getErrorMessage(error), 'error'),
+      error: (error: HttpErrorResponse) => {
+        this.isSaving = false;
+        this.showToast(this.getErrorMessage(error), 'error');
+      },
     });
   }
 
