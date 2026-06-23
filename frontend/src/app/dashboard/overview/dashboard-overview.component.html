@@ -1,9 +1,15 @@
 <section class="summary-grid" aria-label="Chỉ số tổng quan">
   @for (card of dashboardCards; track card.label) {
-    <article>
+    <article
+      [class.clickable]="card.label === 'Lô có rủi ro'"
+      (click)="card.label === 'Lô có rủi ro' && openAtRiskModal()"
+    >
       <span>{{ card.label }}</span>
       <strong>{{ card.value }}</strong>
       <p>{{ card.note }}</p>
+      @if (card.label === "Lô có rủi ro") {
+        <small class="card-hint">Nhấn để xem chi tiết</small>
+      }
     </article>
   }
 </section>
@@ -14,8 +20,13 @@
       <p class="eyebrow">Dữ liệu vận hành</p>
       <h2>Tổng quan hệ thống</h2>
     </div>
-    <button class="secondary-action" type="button" (click)="loadDashboardData()" [disabled]="isLoading">
-      {{ isLoading ? 'Đang tải...' : 'Làm mới' }}
+    <button
+      class="secondary-action"
+      type="button"
+      (click)="loadDashboardData()"
+      [disabled]="isLoading"
+    >
+      {{ isLoading ? "Đang tải..." : "Làm mới" }}
     </button>
   </div>
 
@@ -24,7 +35,9 @@
   }
 
   @if (isLoading) {
-    <p class="empty-state">Đang thu thập dữ liệu từ nông trại và lô sản phẩm...</p>
+    <p class="empty-state">
+      Đang thu thập dữ liệu từ nông trại và lô sản phẩm...
+    </p>
   } @else {
     <div class="chart-grid" aria-label="Biểu đồ tổng quan">
       <section class="chart-panel">
@@ -40,7 +53,10 @@
                 <strong>{{ item.value }}</strong>
               </div>
               <div class="bar-track">
-                <span class="bar-fill farm" [style.width.%]="item.percent"></span>
+                <span
+                  class="bar-fill farm"
+                  [style.width.%]="item.percent"
+                ></span>
               </div>
             </article>
           }
@@ -60,7 +76,10 @@
                 <strong>{{ item.value }}</strong>
               </div>
               <div class="bar-track">
-                <span class="bar-fill batch" [style.width.%]="item.percent"></span>
+                <span
+                  class="bar-fill batch"
+                  [style.width.%]="item.percent"
+                ></span>
               </div>
             </article>
           }
@@ -80,7 +99,10 @@
                 <strong>{{ item.value }}</strong>
               </div>
               <div class="bar-track">
-                <span class="bar-fill risk" [style.width.%]="item.percent"></span>
+                <span
+                  class="bar-fill risk"
+                  [style.width.%]="item.percent"
+                ></span>
               </div>
             </article>
           }
@@ -100,7 +122,10 @@
                 <strong>{{ item.value }}%</strong>
               </div>
               <div class="bar-track">
-                <span class="bar-fill shipment" [style.width.%]="item.percent"></span>
+                <span
+                  class="bar-fill shipment"
+                  [style.width.%]="item.percent"
+                ></span>
               </div>
             </article>
           }
@@ -127,7 +152,9 @@
               @for (row of farmStatisticRows; track row.label) {
                 <tr>
                   <td>{{ row.label }}</td>
-                  <td><strong>{{ row.value }}</strong></td>
+                  <td>
+                    <strong>{{ row.value }}</strong>
+                  </td>
                   <td>{{ row.note }}</td>
                 </tr>
               }
@@ -154,7 +181,9 @@
               @for (row of batchStatisticRows; track row.label) {
                 <tr>
                   <td>{{ row.label }}</td>
-                  <td><strong>{{ row.value }}</strong></td>
+                  <td>
+                    <strong>{{ row.value }}</strong>
+                  </td>
                   <td>{{ row.note }}</td>
                 </tr>
               }
@@ -182,7 +211,9 @@
             @for (row of batchStatusRows; track row.label) {
               <tr>
                 <td>{{ row.label }}</td>
-                <td><strong>{{ row.value }}</strong></td>
+                <td>
+                  <strong>{{ row.value }}</strong>
+                </td>
                 <td>{{ row.note }}</td>
               </tr>
             }
@@ -210,7 +241,9 @@
               @for (row of shipmentStatisticRows; track row.label) {
                 <tr>
                   <td>{{ row.label }}</td>
-                  <td><strong>{{ row.value }}</strong></td>
+                  <td>
+                    <strong>{{ row.value }}</strong>
+                  </td>
                   <td>{{ row.note }}</td>
                 </tr>
               }
@@ -237,7 +270,9 @@
             <tbody>
               @for (shipment of fakeShipments; track shipment.code) {
                 <tr>
-                  <td><strong>{{ shipment.code }}</strong></td>
+                  <td>
+                    <strong>{{ shipment.code }}</strong>
+                  </td>
                   <td>{{ shipment.route }}</td>
                   <td>{{ shipment.status }}</td>
                   <td>{{ shipment.progress }}%</td>
@@ -250,3 +285,90 @@
     </div>
   }
 </section>
+
+@if (showAtRiskModal) {
+  <div class="modal-backdrop" role="presentation" (click)="closeAtRiskModal()">
+    <section
+      class="at-risk-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Danh sách lô có rủi ro"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="modal-header">
+        <div>
+          <p class="eyebrow">Cảnh báo rủi ro</p>
+          <h2>Lô sản phẩm có rủi ro ({{ atRiskBatchesList.length }})</h2>
+        </div>
+        <button
+          class="icon-button"
+          type="button"
+          aria-label="Đóng"
+          (click)="closeAtRiskModal()"
+        >
+          ×
+        </button>
+      </header>
+
+      @if (!atRiskBatchesList.length) {
+        <p class="empty-state">Không có lô sản phẩm nào đang có rủi ro.</p>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Tên sản phẩm</th>
+                <th>Nông trại</th>
+                <th>Loại nông sản</th>
+                <th>Ngày thu hoạch</th>
+                <th>Số lượng</th>
+                <th>Phân loại</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (
+                batch of atRiskPagedBatches;
+                track batch.id;
+                let index = $index
+              ) {
+                <tr>
+                  <td class="index-cell">
+                    {{ (atRiskCurrentPage - 1) * atRiskPageSize + index + 1 }}
+                  </td>
+                  <td>
+                    <strong>{{ batch.product_name }}</strong>
+                  </td>
+                  <td>{{ getFarmName(batch.farm_id) }}</td>
+                  <td>{{ getCropTypeName(batch.crop_type_id) }}</td>
+                  <td>{{ batch.harvest_date | date: "dd/MM/yyyy" }}</td>
+                  <td>{{ batch.quantity }} {{ batch.quantity_unit }}</td>
+                  <td>{{ batch.grade || "Chưa cập nhật" }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <footer class="pagination">
+          <span>Trang {{ atRiskCurrentPage }} / {{ atRiskTotalPages }}</span>
+          <div>
+            <button
+              type="button"
+              [disabled]="atRiskCurrentPage === 1"
+              (click)="goToAtRiskPage(atRiskCurrentPage - 1)"
+            >
+              Trước
+            </button>
+            <button
+              type="button"
+              [disabled]="atRiskCurrentPage === atRiskTotalPages"
+              (click)="goToAtRiskPage(atRiskCurrentPage + 1)"
+            >
+              Sau
+            </button>
+          </div>
+        </footer>
+      }
+    </section>
+  </div>
+}
