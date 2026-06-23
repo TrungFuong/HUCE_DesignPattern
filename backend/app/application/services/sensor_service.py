@@ -15,3 +15,6 @@ class SensorService:
 
     async def get_logs_by_batch_id(self, batch_id: str):
         return await self.sensor_log_repository.find_by_batch_id(batch_id)
+
+    async def get_recent_logs_by_batch_id(self, batch_id: str, limit: int = 50):
+        return await self.sensor_log_repository.find_recent_by_batch_id(batch_id, limit=limit)

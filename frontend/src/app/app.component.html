@@ -1,156 +1,77 @@
 @if (isTracePage) {
-  <router-outlet />
+<router-outlet />
 } @else if (!token) {
-  <main class="shell auth-shell">
-    <section class="hero-panel">
-      <nav class="topbar" aria-label="Điều hướng chính">
-        <div class="brand">
-          <span class="brand-mark">OC</span>
-          <span>OCOP Traceability</span>
-        </div>
-        <div class="nav-status">
-          <span class="status-dot"></span>
-          FastAPI + Angular
-        </div>
-      </nav>
-
-      <div class="hero-grid">
-        <section class="intro">
-          <p class="eyebrow">Truy xuất nguồn gốc chủ động</p>
-          <h1>{{ title }}</h1>
-          <p class="lead">
-            Quản lý nông trại, lô nông sản, vận chuyển, cảm biến IoT và xác minh
-            blockchain trong một luồng dữ liệu minh bạch.
-          </p>
-
-          <div class="flow-strip" aria-label="Luồng truy xuất">
-            <span>Nông trại</span>
-            <span>Lô sản phẩm</span>
-            <span>Cảm biến IoT</span>
-            <span>Blockchain hash</span>
-            <span>QR công khai</span>
-          </div>
-
-          <div class="metric-grid">
-            <article>
-              <strong>SQL Server</strong>
-              <span>Người dùng, nông trại, lô hàng, vận chuyển</span>
-            </article>
-            <article>
-              <strong>MongoDB</strong>
-              <span>Nhật ký cảm biến theo thời gian</span>
-            </article>
-            <article>
-              <strong>Redis Queue</strong>
-              <span>Xử lý cảm biến và tác vụ blockchain</span>
-            </article>
-          </div>
-        </section>
-
-        <section class="auth-panel" aria-label="Bảng xác thực">
-          <div class="auth-header">
-            <div>
-              <p class="eyebrow">Tài khoản hệ thống</p>
-              <h2>{{ authMode === "login" ? "Đăng nhập" : "Đăng ký" }}</h2>
-            </div>
-            <div
-              class="mode-toggle"
-              role="group"
-              aria-label="Chọn chế độ xác thực"
-            >
-              <button
-                type="button"
-                [class.active]="authMode === 'login'"
-                (click)="setMode('login')"
-              >
-                Đăng nhập
-              </button>
-              <button
-                type="button"
-                [class.active]="authMode === 'register'"
-                (click)="setMode('register')"
-              >
-                Đăng ký
-              </button>
-            </div>
-          </div>
-
-          <form class="auth-form" (ngSubmit)="submitAuth()" #authForm="ngForm">
-            @if (authMode === "register") {
-              <label>
-                Họ tên
-                <input
-                  name="full_name"
-                  type="text"
-                  [(ngModel)]="form.full_name"
-                  placeholder="Nguyễn Văn A"
-                  required
-                />
-              </label>
-            }
-
-            <label>
-              Email
-              <input
-                name="email"
-                type="email"
-                [(ngModel)]="form.email"
-                placeholder="farmer@ocop.vn"
-                required
-              />
-            </label>
-
-            <label>
-              Mật khẩu
-              <input
-                name="password"
-                type="password"
-                [(ngModel)]="form.password"
-                minlength="6"
-                placeholder="Tối thiểu 6 ký tự"
-                required
-              />
-            </label>
-
-            @if (authMode === "register") {
-              <label>
-                Vai trò
-                <select name="role" [(ngModel)]="form.role">
-                  @for (role of roles; track role.value) {
-                    <option [ngValue]="role.value">{{ role.label }}</option>
-                  }
-                </select>
-              </label>
-            }
-
-            <button
-              class="primary-action"
-              type="submit"
-              [disabled]="authForm.invalid || isSubmitting"
-            >
-              {{
-                isSubmitting
-                  ? "Đang xử lý..."
-                  : authMode === "login"
-                    ? "Đăng nhập"
-                    : "Tạo tài khoản"
-              }}
-            </button>
-          </form>
-
-          @if (authMessage) {
-            <p class="notice success">{{ authMessage }}</p>
-          }
-
-          @if (authError) {
-            <p class="notice error">{{ authError }}</p>
-          }
-        </section>
+<main class="shell auth-shell">
+  <section class="hero-panel">
+    <nav class="topbar" aria-label="Điều hướng chính">
+      <div class="brand">
+        <span class="brand-mark">OC</span>
+        <span>OCOP Traceability</span>
       </div>
-    </section>
-  </main>
+    </nav>
+
+    <div class="hero-grid">
+      <section class="intro">
+        <p class="eyebrow">Truy xuất nguồn gốc chủ động</p>
+        <h1>{{ title }}</h1>
+        <p class="lead">
+          Quản lý nông trại, lô nông sản, vận chuyển, cảm biến IoT và xác minh
+          blockchain trong một luồng dữ liệu minh bạch.
+        </p>
+
+        <div class="flow-strip" aria-label="Luồng truy xuất">
+          <span><span aria-hidden="true">🌱</span> Nông trại</span>
+          <span><span aria-hidden="true">📦</span> Lô sản phẩm</span>
+          <span><span aria-hidden="true">📡</span> Cảm biến IoT</span>
+          <span><span aria-hidden="true">🔗</span> Blockchain</span>
+          <span><span aria-hidden="true">📱</span> QR công khai</span>
+        </div>
+      </section>
+
+      <section class="auth-panel" aria-label="Bảng xác thực">
+        <div class="auth-header">
+          <div>
+            <p class="eyebrow">Tài khoản hệ thống</p>
+            <h2>Đăng nhập</h2>
+          </div>
+        </div>
+
+        <form class="auth-form" (ngSubmit)="submitAuth()" #authForm="ngForm">
+          <label>
+            Email
+            <input name="email" type="email" [(ngModel)]="form.email" placeholder="farmer@ocop.vn" required />
+          </label>
+
+          <label>
+            <span>Mật khẩu <span class="required">*</span></span>
+            <div class="password-input-wrapper">
+              <input name="password" [type]="showLoginPassword ? 'text' : 'password'" [(ngModel)]="form.password"
+                required autocomplete="current-password" />
+              <button type="button" class="toggle-password-btn" (click)="showLoginPassword = !showLoginPassword"
+                tabindex="-1">
+                {{ showLoginPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+          </label>
+
+          <button class="primary-action" type="submit" [disabled]="authForm.invalid || isSubmitting">
+            {{ isSubmitting ? "Đang xử lý..." : "Đăng nhập" }}
+          </button>
+        </form>
+
+        @if (authMessage) {
+        <p class="notice success">{{ authMessage }}</p>
+        }
+
+        @if (authError) {
+        <p class="notice error">{{ authError }}</p>
+        }
+      </section>
+    </div>
+  </section>
+</main>
 } @else {
-  <app-dashboard [authMessage]="authMessage" (logoutRequested)="logout()">
-    <router-outlet />
-  </app-dashboard>
+<app-dashboard [authMessage]="authMessage" (logoutRequested)="logout()">
+  <router-outlet />
+</app-dashboard>
 }

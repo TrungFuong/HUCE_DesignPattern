@@ -12,14 +12,14 @@
       <label class="full-span">
         Loại nông sản
         <select
-          name="crop_type_ids"
-          multiple
-          size="6"
-          [(ngModel)]="form.crop_type_ids"
-          (change)="updateCropTypeSelection($event)"
+          name="crop_type_id"
+          [(ngModel)]="form.crop_type_id"
           [disabled]="isLoadingCropTypes || !cropTypes.length"
           required
         >
+          <option value="" disabled>
+            {{ isLoadingCropTypes ? 'Đang tải loại nông sản...' : 'Chọn loại nông sản' }}
+          </option>
           @for (cropType of cropTypes; track cropType.id) {
             <option [value]="cropType.id">{{ cropType.name }} ({{ cropType.code }})</option>
           }
@@ -29,7 +29,7 @@
         } @else if (cropTypesError) {
           <span class="field-note error">{{ cropTypesError }}</span>
         } @else {
-          <span class="field-note">Giữ Ctrl để chọn nhiều loại nông sản.</span>
+          <span class="field-note">Chọn một loại nông sản cho quy tắc rủi ro.</span>
         }
       </label>
 
@@ -70,7 +70,7 @@
 
       <footer class="modal-actions full-span">
         <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
-        <button class="primary-button" type="submit" [disabled]="riskRuleForm.invalid || !form.crop_type_ids.length">
+        <button class="primary-button" type="submit" [disabled]="riskRuleForm.invalid || !form.crop_type_id">
           {{ riskRule ? 'Cập nhật' : 'Tạo mới' }}
         </button>
       </footer>

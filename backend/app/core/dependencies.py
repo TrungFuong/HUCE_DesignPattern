@@ -1,7 +1,8 @@
 from functools import lru_cache
 from typing import AsyncGenerator
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -32,6 +33,7 @@ from app.application.observers.risk_observer import RiskObserver
 from app.application.services.batch_service import BatchService
 from app.application.services.blockchain_service import BlockchainService
 from app.application.services.container_service import ContainerService
+from app.application.services.crop_type_service import CropTypeService
 from app.application.services.farm_service import FarmService
 from app.application.services.risk_service import RiskService
 from app.application.services.sensor_service import SensorService
@@ -58,14 +60,18 @@ async def get_redis():
     yield get_redis_client()
 
 
-async def get_current_user(authorization: str | None = Header(default=None)):
-    if not authorization:
+_http_bearer = HTTPBearer(auto_error=False)
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_http_bearer),
+) -> dict:
+    if not credentials:
         raise HTTPException(status_code=401, detail="Authorization header required")
-    token = authorization.replace("Bearer ", "")
     try:
-        payload = decode_access_token(token)
+        payload = decode_access_token(credentials.credentials)
     except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
     return payload
 
 
@@ -139,6 +145,10 @@ def get_risk_service(db_session: AsyncSession = Depends(get_db_session)) -> Risk
     return RiskService(risk_rule_repository=SqlRiskRuleRepository(db_session))
 
 
+def get_crop_type_service(db_session: AsyncSession = Depends(get_db_session)) -> CropTypeService:
+    return CropTypeService(crop_type_repository=SqlCropTypeRepository(db_session))
+
+
 def get_traceability_facade(
     db_session: AsyncSession = Depends(get_db_session),
     mongo_db=Depends(get_mongo_db),
@@ -152,6 +162,7 @@ def get_traceability_facade(
         hash_service=get_hash_service(),
         user_service=get_user_service(db_session),
         container_service=get_container_service(db_session),
+        crop_type_service=get_crop_type_service(db_session),
         trace_response_builder=TraceResponseBuilder(),
     )
 

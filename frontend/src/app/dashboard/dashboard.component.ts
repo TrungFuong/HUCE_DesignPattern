@@ -18,7 +18,9 @@ export class DashboardComponent {
     { path: '/crop-types', icon: '◇', label: 'Loại nông sản', exact: false },
     { path: '/batches', icon: '◫', label: 'Lô sản phẩm', exact: false },
     { path: '/risk-rules', icon: '!', label: 'Risk rule', exact: false },
+    { path: '/containers', icon: '▣', label: 'Container', exact: false },
     { path: '/shipments', icon: '⇄', label: 'Vận chuyển', exact: false },
+    { path: '/users', icon: '👤', label: 'Người dùng', exact: false },
     { path: '/sensors', icon: '○', label: 'Cảm biến IoT', exact: false },
     { path: '/reports', icon: '▤', label: 'Báo cáo', exact: false },
   ];

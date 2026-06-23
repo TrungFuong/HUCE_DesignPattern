@@ -1,0 +1,50 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Chi tiết container">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Chi tiết container</p>
+        <h2>{{ container.code }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng chi tiết" (click)="close.emit()">×</button>
+    </header>
+
+    <div class="detail-grid">
+      <article>
+        <span>Mã container</span>
+        <strong>{{ container.code }}</strong>
+      </article>
+      <article>
+        <span>Loại container</span>
+        <strong>{{ container.type }}</strong>
+      </article>
+      <article>
+        <span>Sức chứa</span>
+        <strong>{{ container.capacity }} {{ container.capacity_unit }}</strong>
+      </article>
+      <article>
+        <span>Chất liệu</span>
+        <strong>{{ container.material || 'Chưa cập nhật' }}</strong>
+      </article>
+      <article>
+        <span>Kiểm soát nhiệt độ</span>
+        <strong>{{ container.is_temperature_controlled ? 'Có' : 'Không' }}</strong>
+      </article>
+      <article>
+        <span>Dải nhiệt độ</span>
+        <strong>{{ getTemperatureRange() }}</strong>
+      </article>
+      <article>
+        <span>Trạng thái</span>
+        <strong>{{ getStatusLabel(container.status) }}</strong>
+      </article>
+      <article class="full-span">
+        <span>Mô tả</span>
+        <strong>{{ container.description || 'Chưa có mô tả' }}</strong>
+      </article>
+    </div>
+
+    <footer class="modal-actions">
+      <button type="button" (click)="close.emit()">Đóng</button>
+    </footer>
+  </section>
+</div>

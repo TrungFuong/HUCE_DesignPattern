@@ -1,8 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 
 from app.application.dto.batch_dto import CreateBatchRequest, UpdateBatchRequest
 from app.application.services.batch_service import BatchService
+from app.core.dependencies import get_batch_service, get_current_user
 from app.infrastructure.database.sqlserver.repositories.sql_batch_repository import SqlBatchRepository
 from app.infrastructure.database.sqlserver.repositories.sql_crop_type_repository import SqlCropTypeRepository
 from app.infrastructure.database.sqlserver.repositories.sql_farm_repository import SqlFarmRepository
@@ -13,7 +14,10 @@ router = APIRouter(prefix="/batches", tags=["Batches"])
 
 
 @router.post("/")
-async def create_batch(request: CreateBatchRequest):
+async def create_batch(
+    request: CreateBatchRequest,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         batch_service = BatchService(
             SqlBatchRepository(session),
@@ -25,7 +29,9 @@ async def create_batch(request: CreateBatchRequest):
 
 
 @router.get("/")
-async def list_batches():
+async def list_batches(
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         batch_service = BatchService(
             SqlBatchRepository(session),
@@ -37,7 +43,10 @@ async def list_batches():
 
 
 @router.get("/{batch_id}")
-async def get_batch(batch_id: str):
+async def get_batch(
+    batch_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         batch_service = BatchService(
             SqlBatchRepository(session),
@@ -49,7 +58,11 @@ async def get_batch(batch_id: str):
 
 
 @router.put("/{batch_id}")
-async def update_batch(batch_id: str, request: UpdateBatchRequest):
+async def update_batch(
+    batch_id: str,
+    request: UpdateBatchRequest,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         batch_service = BatchService(
             SqlBatchRepository(session),
@@ -61,7 +74,10 @@ async def update_batch(batch_id: str, request: UpdateBatchRequest):
 
 
 @router.delete("/{batch_id}")
-async def delete_batch(batch_id: str):
+async def delete_batch(
+    batch_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         batch_service = BatchService(
             SqlBatchRepository(session),
@@ -73,7 +89,10 @@ async def delete_batch(batch_id: str):
 
 
 @router.post("/{batch_id}/qr")
-async def regenerate_batch_qr(batch_id: str):
+async def regenerate_batch_qr(
+    batch_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         batch_service = BatchService(
             SqlBatchRepository(session),
@@ -85,7 +104,10 @@ async def regenerate_batch_qr(batch_id: str):
 
 
 @router.get("/{batch_id}/qr-image")
-async def get_batch_qr_image(batch_id: str):
+async def get_batch_qr_image(
+    batch_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     async with get_async_session() as session:
         batch_service = BatchService(
             SqlBatchRepository(session),
@@ -93,7 +115,5 @@ async def get_batch_qr_image(batch_id: str):
             SqlFarmRepository(session),
             SqlCropTypeRepository(session),
         )
-        batch = await batch_service.get_by_id(batch_id)
-        if not batch.qr_code_url:
-            batch = await batch_service.regenerate_qr_code(batch_id)
+        batch = await batch_service.regenerate_qr_code(batch_id)
         return FileResponse(batch.qr_code_url, media_type="image/png")
