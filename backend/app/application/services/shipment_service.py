@@ -3,6 +3,7 @@ import uuid
 from app.application.utils.enum_parser import format_enum_options, parse_enum
 from app.domain.entities.shipment import Shipment, ShipmentItem
 from app.domain.enums.shipment_status import ShipmentStatus
+from app.domain.enums.container_status import ContainerStatus
 from app.domain.interfaces.repositories.batch_repository import BatchRepository
 from app.domain.interfaces.repositories.container_repository import ContainerRepository
 from app.domain.interfaces.repositories.shipment_repository import ShipmentRepository
@@ -70,6 +71,10 @@ class ShipmentService:
         shipments = await self.shipment_repository.find_all()
         return [await self._shipment_with_items(shipment) for shipment in shipments]
 
+    async def list_shipments_for_distributor(self, distributor_id: str):
+        shipments = await self.shipment_repository.find_by_to_actor_id(distributor_id)
+        return [await self._shipment_with_items(shipment) for shipment in shipments]
+
     async def update_shipment(self, shipment_id: str, data):
         await self.get_by_id(shipment_id)
         await self._validate_foreign_keys(data)
@@ -127,10 +132,19 @@ class ShipmentService:
 
     async def _shipment_with_items(self, shipment: Shipment) -> dict:
         result = shipment.__dict__.copy()
-        result["items"] = [
-            item.__dict__
-            for item in await self.shipment_repository.find_items_by_shipment_id(shipment.id)
-        ]
+        result["items"] = []
+        for item in await self.shipment_repository.find_items_by_shipment_id(shipment.id):
+            item_data = item.__dict__.copy()
+            if self.batch_repository:
+                batch = await self.batch_repository.find_by_id(item.batch_id)
+                item_data["product_name"] = batch.product_name if batch else None
+            if self.container_repository:
+                container = await self.container_repository.find_by_id(item.container_id)
+                item_data["container_code"] = container.code if container else None
+                item_data["container_type"] = container.type if container else None
+                item_data["container_capacity"] = container.capacity if container else None
+                item_data["container_capacity_unit"] = container.capacity_unit if container else None
+            result["items"].append(item_data)
         return result
 
     async def _validate_foreign_keys(self, data) -> None:
@@ -147,6 +161,13 @@ class ShipmentService:
         if not items:
             raise ValueError("Shipment must have at least one item")
 
+        existing_container_ids: set[str] = set()
+        if shipment_id and await self.shipment_repository.find_by_id(shipment_id):
+            existing_container_ids = {
+                item.container_id
+                for item in await self.shipment_repository.find_items_by_shipment_id(shipment_id)
+            }
+
         container_totals: dict[str, float] = {}
         seen_lines: set[tuple[str, str]] = set()
         for item in items:
@@ -159,6 +180,11 @@ class ShipmentService:
 
             batch = await self._get_batch(item.batch_id)
             container = await self._get_container(item.container_id)
+            if (
+                container.status in (ContainerStatus.MAINTENANCE, ContainerStatus.RETIRED)
+                and container.id not in existing_container_ids
+            ):
+                raise ValueError("Container đang bảo trì hoặc ngừng dùng không thể dùng để vận chuyển")
             if batch.quantity_unit != item.quantity_unit:
                 raise ValueError("Shipment item quantity_unit must match batch quantity_unit")
             if container.capacity_unit != item.quantity_unit:

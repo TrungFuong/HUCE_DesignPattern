@@ -3,12 +3,12 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.application.dto.risk_rule_dto import RiskRuleRequest
-from app.core.dependencies import get_current_user
+from app.core.dependencies import require_roles
+from app.domain.enums.role import RoleName
 from app.domain.entities.risk_rule import RiskRule
 from app.infrastructure.database.sqlserver.repositories.sql_crop_type_repository import SqlCropTypeRepository
 from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
 from app.infrastructure.database.sqlserver.session import get_async_session
-
 router = APIRouter(prefix="/risk-rules", tags=["Risk Rules"])
 
 
@@ -51,7 +51,7 @@ def build_risk_rule(request: RiskRuleRequest, risk_rule_id: str, crop_type_id: s
 @router.post("/")
 async def create_risk_rule(
     request: RiskRuleRequest,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER)),
 ):
     try:
         validate_risk_rule(request)
@@ -66,7 +66,7 @@ async def create_risk_rule(
 
 @router.get("/")
 async def list_risk_rules(
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER)),
 ):
     async with get_async_session() as session:
         repository = SqlRiskRuleRepository(session)
@@ -76,7 +76,7 @@ async def list_risk_rules(
 @router.get("/id/{risk_rule_id}")
 async def get_risk_rule_by_id(
     risk_rule_id: str,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER)),
 ):
     async with get_async_session() as session:
         repository = SqlRiskRuleRepository(session)
@@ -90,7 +90,7 @@ async def get_risk_rule_by_id(
 async def update_risk_rule(
     risk_rule_id: str,
     request: RiskRuleRequest,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER)),
 ):
     try:
         validate_risk_rule(request)
@@ -109,7 +109,7 @@ async def update_risk_rule(
 @router.delete("/id/{risk_rule_id}")
 async def delete_risk_rule(
     risk_rule_id: str,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER)),
 ):
     try:
         async with get_async_session() as session:
@@ -123,7 +123,7 @@ async def delete_risk_rule(
 @router.get("/{crop_type_id}")
 async def get_risk_rules_by_crop_type(
     crop_type_id: str,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER)),
 ):
     async with get_async_session() as session:
         repository = SqlRiskRuleRepository(session)

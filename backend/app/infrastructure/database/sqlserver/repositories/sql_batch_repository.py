@@ -6,6 +6,7 @@ from app.domain.enums.batch_status import BatchStatus
 from app.domain.enums.risk_level import RiskLevel
 from app.domain.interfaces.repositories.batch_repository import BatchRepository
 from app.infrastructure.database.sqlserver.models.batch_model import BatchModel
+from app.infrastructure.database.sqlserver.models.farm_model import FarmModel
 
 
 class SqlBatchRepository(BatchRepository):
@@ -67,6 +68,23 @@ class SqlBatchRepository(BatchRepository):
 
     async def find_by_farm_id(self, farm_id: str) -> list[Batch]:
         result = await self.db_session.execute(select(BatchModel).where(BatchModel.farm_id == farm_id))
+        return [self._to_entity(model) for model in result.scalars().all()]
+
+    async def find_by_owner_id(self, owner_id: str) -> list[Batch]:
+        result = await self.db_session.execute(
+            select(BatchModel)
+            .join(FarmModel, BatchModel.farm_id == FarmModel.id)
+            .where(FarmModel.owner_id == owner_id)
+            .order_by(BatchModel.harvest_date.desc())
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
+
+    async def find_by_crop_type_id(self, crop_type_id: str) -> list[Batch]:
+        result = await self.db_session.execute(
+            select(BatchModel)
+            .where(BatchModel.crop_type_id == crop_type_id)
+            .order_by(BatchModel.harvest_date.desc())
+        )
         return [self._to_entity(model) for model in result.scalars().all()]
 
     def _to_entity(self, model: BatchModel) -> Batch:

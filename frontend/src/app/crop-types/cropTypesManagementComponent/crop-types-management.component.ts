@@ -4,6 +4,7 @@ import { CropType, CropTypePayload } from '../crop-type.model';
 import { CropTypesService } from '../crop-types.service';
 import { CreateUpdateCropTypesComponent } from '../createUpdateCropTypesComponent/create-update-crop-types.component';
 import { ViewDetailCropTypesComponent } from '../viewDetailCropTypesComponent/view-detail-crop-types.component';
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-crop-types-management',
@@ -14,6 +15,7 @@ import { ViewDetailCropTypesComponent } from '../viewDetailCropTypesComponent/vi
 })
 export class CropTypesManagementComponent implements OnInit {
   private readonly cropTypesService = inject(CropTypesService);
+  private readonly authService = inject(AuthService);
 
   currentPage = 1;
   readonly pageSize = 10;
@@ -24,8 +26,13 @@ export class CropTypesManagementComponent implements OnInit {
   deletingCropType: CropType | null = null;
   isFormOpen = false;
   isLoading = false;
+  isSaving = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
+
+  get isReadOnly(): boolean {
+    return this.authService.getRole() !== 0;
+  }
 
   ngOnInit(): void {
     this.loadCropTypes();
@@ -60,11 +67,17 @@ export class CropTypesManagementComponent implements OnInit {
   }
 
   openCreateForm(): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.editingCropType = null;
     this.isFormOpen = true;
   }
 
   openEditForm(cropType: CropType): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.editingCropType = cropType;
     this.isFormOpen = true;
   }
@@ -74,6 +87,9 @@ export class CropTypesManagementComponent implements OnInit {
   }
 
   openDeleteConfirm(cropType: CropType): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.deletingCropType = cropType;
   }
 
@@ -83,6 +99,10 @@ export class CropTypesManagementComponent implements OnInit {
   }
 
   saveCropType(value: CropTypePayload): void {
+    if (this.isReadOnly || this.isSaving) {
+      return;
+    }
+    this.isSaving = true;
     const isEdit = Boolean(this.editingCropType);
     const request$ = this.editingCropType
       ? this.cropTypesService.updateCropType(this.editingCropType.id, value)
@@ -90,18 +110,20 @@ export class CropTypesManagementComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.isSaving = false;
         this.closeForm();
         this.showToast(isEdit ? 'Cập nhật loại nông sản thành công.' : 'Tạo mới loại nông sản thành công.');
         this.loadCropTypes();
       },
       error: (error: HttpErrorResponse) => {
+        this.isSaving = false;
         this.showToast(this.getErrorMessage(error), 'error');
       },
     });
   }
 
   confirmDelete(): void {
-    if (!this.deletingCropType) {
+    if (this.isReadOnly || !this.deletingCropType) {
       return;
     }
 

@@ -65,12 +65,15 @@ def create_app() -> FastAPI:
                 existing = await user_repo.find_by_email("admin@ocop.vn")
                 if not existing:
                     auth_service = AuthService(user_repo)
-                    await auth_service.register(RegisterRequest(
-                        full_name="Admin",
-                        email="admin@ocop.vn",
-                        password="Abc@1234",
-                        role=0
-                    ))
+                    await auth_service.register(
+                        RegisterRequest(
+                            full_name="Admin",
+                            email="admin@ocop.vn",
+                            password="Abc@1234",
+                            role=0,
+                        ),
+                        allow_admin=True,
+                    )
                     logger.info("Created default admin account: admin@ocop.vn")
         except Exception as error:
             logger.warning("Database initialization skipped: %s", error)

@@ -11,6 +11,7 @@ import { CropType, CropTypePayload } from '../crop-type.model';
 })
 export class CreateUpdateCropTypesComponent implements OnChanges {
   @Input() cropType: CropType | null = null;
+  @Input() isSaving = false;
   @Output() cancel = new EventEmitter<void>();
   @Output() save = new EventEmitter<CropTypePayload>();
 
@@ -33,6 +34,9 @@ export class CreateUpdateCropTypesComponent implements OnChanges {
   }
 
   submit(): void {
+    if (this.isSaving) {
+      return;
+    }
     this.save.emit({
       code: this.form.code.trim().toUpperCase(),
       name: this.form.name.trim(),

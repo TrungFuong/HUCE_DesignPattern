@@ -80,4 +80,3 @@ class BlockchainWorker:
                 hash_service=hash_service,
             )
             await command.execute()
-

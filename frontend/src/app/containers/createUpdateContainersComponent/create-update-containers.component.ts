@@ -11,6 +11,7 @@ import { Container, ContainerPayload } from '../container.model';
 })
 export class CreateUpdateContainersComponent implements OnChanges {
   @Input() container: Container | null = null;
+  @Input() isSaving = false;
   @Output() cancel = new EventEmitter<void>();
   @Output() save = new EventEmitter<ContainerPayload>();
 
@@ -54,6 +55,9 @@ export class CreateUpdateContainersComponent implements OnChanges {
   }
 
   submit(): void {
+    if (this.isSaving) {
+      return;
+    }
     const isTemperatureControlled = Boolean(this.form.is_temperature_controlled);
     const payload: ContainerPayload = {
       id: this.container?.id,

@@ -7,6 +7,7 @@ from app.domain.enums.risk_level import RiskLevel
 from app.domain.interfaces.repositories.crop_type_repository import CropTypeRepository
 from app.domain.interfaces.repositories.farm_repository import FarmRepository
 from app.domain.interfaces.services.qr_service import QrService
+from app.domain.interfaces.repositories.shipment_repository import ShipmentRepository
 
 
 class BatchService:
@@ -17,11 +18,13 @@ class BatchService:
         qr_service: QrService,
         farm_repository: FarmRepository | None = None,
         crop_type_repository: CropTypeRepository | None = None,
+        shipment_repository: ShipmentRepository | None = None,
     ):
         self.batch_repository = batch_repository
         self.qr_service = qr_service
         self.farm_repository = farm_repository
         self.crop_type_repository = crop_type_repository
+        self.shipment_repository = shipment_repository
 
     async def create_batch(self, data):
         await self._validate_batch_data(data)
@@ -66,6 +69,8 @@ class BatchService:
 
     async def delete_batch(self, batch_id: str):
         await self.get_by_id(batch_id)
+        if self.shipment_repository and await self.shipment_repository.find_items_by_batch_id(batch_id):
+            raise ValueError("Không thể xóa lô sản phẩm đang nằm trong vận chuyển")
         await self.batch_repository.delete(batch_id)
         return {"message": "Batch deleted successfully"}
 

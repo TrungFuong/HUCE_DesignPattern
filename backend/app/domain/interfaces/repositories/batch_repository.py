@@ -28,3 +28,11 @@ class BatchRepository(ABC):
     @abstractmethod
     async def find_by_farm_id(self, farm_id: str) -> list[Batch]:
         pass
+
+    @abstractmethod
+    async def find_by_owner_id(self, owner_id: str) -> list[Batch]:
+        pass
+
+    @abstractmethod
+    async def find_by_crop_type_id(self, crop_type_id: str) -> list[Batch]:
+        pass

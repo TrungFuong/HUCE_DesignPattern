@@ -7,6 +7,7 @@ import { FarmsService } from '../farms.service';
 import { ViewDetailFarmsComponent } from '../viewDetailFarmsComponent/view-detail-farms.component';
 import { User } from '../../users/user.model';
 import { UsersService } from '../../users/users.service';
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-farms-management',
@@ -18,6 +19,7 @@ import { UsersService } from '../../users/users.service';
 export class FarmsManagementComponent implements OnInit {
   private readonly farmsService = inject(FarmsService);
   private readonly usersService = inject(UsersService);
+  private readonly authService = inject(AuthService);
 
   currentPage = 1;
   readonly pageSize = 10;
@@ -32,6 +34,12 @@ export class FarmsManagementComponent implements OnInit {
   isSaving = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
+  farmersError = '';
+  isLoadingFarmers = false;
+
+  get isFarmer(): boolean {
+    return this.authService.getRole() === 1;
+  }
 
   ngOnInit(): void {
     this.loadFarms();
@@ -71,12 +79,23 @@ export class FarmsManagementComponent implements OnInit {
   }
 
   loadFarmers(): void {
+    this.isLoadingFarmers = true;
+    this.farmersError = '';
+    if (this.isFarmer) {
+      const currentUser = this.authService.getCurrentUser();
+      this.farmers = currentUser ? [currentUser] : [];
+      this.isLoadingFarmers = false;
+      return;
+    }
     this.usersService.getFarmers().subscribe({
       next: (farmers) => {
-        this.farmers = farmers;
+        this.farmers = farmers.filter((farmer) => farmer.is_active);
+        this.isLoadingFarmers = false;
       },
       error: () => {
         this.farmers = [];
+        this.farmersError = 'Không thể tải danh sách nông dân.';
+        this.isLoadingFarmers = false;
       },
     });
   }
@@ -105,6 +124,9 @@ export class FarmsManagementComponent implements OnInit {
   }
 
   saveFarm(value: FarmPayload): void {
+    if (this.isSaving) {
+      return;
+    }
     this.isSaving = true;
     const isEdit = Boolean(this.editingFarm);
     const request$ = this.editingFarm

@@ -19,6 +19,7 @@ export class CreateUpdateBatchesComponent implements OnChanges {
   @Input() cropTypes: CropType[] = [];
   @Input() cropTypesError = '';
   @Input() isLoadingCropTypes = false;
+  @Input() isSaving = false;
   @Output() cancel = new EventEmitter<void>();
   @Output() save = new EventEmitter<BatchPayload>();
 
@@ -45,6 +46,9 @@ export class CreateUpdateBatchesComponent implements OnChanges {
   }
 
   submit(): void {
+    if (this.isSaving) {
+      return;
+    }
     this.save.emit({
       ...this.form,
       crop_type_id: this.form.crop_type_id || null,
