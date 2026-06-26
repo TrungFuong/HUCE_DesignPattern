@@ -1,8 +1,11 @@
+import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { Batch } from '../../batches/batch.model';
 import { BatchesService } from '../../batches/batches.service';
+import { CropType } from '../../crop-types/crop-type.model';
+import { CropTypesService } from '../../crop-types/crop-types.service';
 import { Farm } from '../../farms/farm.model';
 import { FarmsService } from '../../farms/farms.service';
 
@@ -35,17 +38,23 @@ interface FakeShipment {
 @Component({
   selector: 'app-dashboard-overview',
   standalone: true,
+  imports: [DatePipe],
   templateUrl: './dashboard-overview.component.html',
   styleUrls: ['./dashboard-overview.component.scss'],
 })
 export class DashboardOverviewComponent implements OnInit {
   private readonly farmsService = inject(FarmsService);
   private readonly batchesService = inject(BatchesService);
+  private readonly cropTypesService = inject(CropTypesService);
 
   farms: Farm[] = [];
   batches: Batch[] = [];
+  cropTypes: CropType[] = [];
   isLoading = false;
   errorMessage = '';
+  showAtRiskModal = false;
+  atRiskCurrentPage = 1;
+  readonly atRiskPageSize = 5;
 
   readonly fakeShipments: FakeShipment[] = [
     { code: 'VC-2026-001', route: 'Hà Nội -> Hải Phòng', status: 'Đang giao', batches: 4, progress: 68 },
@@ -58,26 +67,66 @@ export class DashboardOverviewComponent implements OnInit {
   }
 
   get dashboardCards(): DashboardCard[] {
+    const normalBatches = this.batches.filter((batch) => Number(batch.risk_level) === 0).length;
     const atRiskBatches = this.batches.filter((batch) => Number(batch.risk_level) === 1).length;
-    const activeShipments = this.fakeShipments.filter((shipment) => shipment.status !== 'Hoàn tất').length;
 
     return [
       {
-        label: 'Nông trại đang quản lý',
-        value: String(this.farms.length),
-        note: `${this.readyForHarvestFarms} nông trại có lịch thu hoạch trong 30 ngày tới`,
-      },
-      {
-        label: 'Lô sản phẩm',
+        label: 'Tổng lô hàng',
         value: String(this.batches.length),
-        note: `${atRiskBatches} lô đang có cảnh báo rủi ro`,
+        note: 'Tổng số lô sản phẩm trong hệ thống',
       },
       {
-        label: 'Chuyến vận chuyển',
-        value: String(this.fakeShipments.length),
-        note: `${activeShipments} chuyến đang theo dõi bằng dữ liệu mẫu`,
+        label: 'Lô bình thường',
+        value: String(normalBatches),
+        note: 'Lô không có cảnh báo rủi ro',
+      },
+      {
+        label: 'Lô có rủi ro',
+        value: String(atRiskBatches),
+        note: 'Lô đang ở trạng thái rủi ro',
+      },
+      {
+        label: 'Tổng nông trại',
+        value: String(this.farms.length),
+        note: `${this.readyForHarvestFarms} nông trại sắp thu hoạch trong 30 ngày tới`,
       },
     ];
+  }
+
+  get atRiskBatchesList(): Batch[] {
+    return this.batches.filter((batch) => Number(batch.risk_level) === 1);
+  }
+
+  get atRiskTotalPages(): number {
+    return Math.max(1, Math.ceil(this.atRiskBatchesList.length / this.atRiskPageSize));
+  }
+
+  get atRiskPagedBatches(): Batch[] {
+    const start = (this.atRiskCurrentPage - 1) * this.atRiskPageSize;
+    return this.atRiskBatchesList.slice(start, start + this.atRiskPageSize);
+  }
+
+  getFarmName(farmId: string): string {
+    return this.farms.find((farm) => farm.id === farmId)?.name ?? farmId;
+  }
+
+  getCropTypeName(cropTypeId: string | null): string {
+    if (!cropTypeId) return 'Không có';
+    return this.cropTypes.find((c) => c.id === cropTypeId)?.name ?? cropTypeId;
+  }
+
+  openAtRiskModal(): void {
+    this.showAtRiskModal = true;
+    this.atRiskCurrentPage = 1;
+  }
+
+  closeAtRiskModal(): void {
+    this.showAtRiskModal = false;
+  }
+
+  goToAtRiskPage(page: number): void {
+    this.atRiskCurrentPage = Math.min(Math.max(page, 1), this.atRiskTotalPages);
   }
 
   get farmStatisticRows(): StatisticRow[] {
@@ -169,9 +218,7 @@ export class DashboardOverviewComponent implements OnInit {
     next30Days.setDate(today.getDate() + 30);
 
     return this.farms.filter((farm) => {
-      if (!farm.harvest_date) {
-        return false;
-      }
+      if (!farm.harvest_date) return false;
       const harvestDate = new Date(farm.harvest_date);
       return harvestDate >= today && harvestDate <= next30Days;
     }).length;
@@ -184,10 +231,12 @@ export class DashboardOverviewComponent implements OnInit {
     forkJoin({
       farms: this.farmsService.getFarms(),
       batches: this.batchesService.getBatches(),
+      cropTypes: this.cropTypesService.getCropTypes(),
     }).subscribe({
-      next: ({ farms, batches }) => {
+      next: ({ farms, batches, cropTypes }) => {
         this.farms = farms;
         this.batches = batches;
+        this.cropTypes = cropTypes;
         this.isLoading = false;
       },
       error: (error: HttpErrorResponse) => {
