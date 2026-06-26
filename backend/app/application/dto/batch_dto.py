@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from pydantic import BaseModel
 
 
@@ -35,3 +36,13 @@ class BatchResponse(BaseModel):
     status: int
     risk_level: int
     qr_code_url: str | None
+
+
+class BatchChemicalSummary(BaseModel):
+    chemical_id: str
+    applied_at: datetime | None = None
+
+
+class BatchDetailResponse(BatchResponse):
+    """Response đầy đủ của batch, bao gồm danh sách hóa chất đã sử dụng."""
+    chemicals: List[BatchChemicalSummary] = []

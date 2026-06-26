@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from typing import List
 
-from app.application.dto.batch_dto import CreateBatchRequest, UpdateBatchRequest
+from app.application.dto.batch_dto import (
+    CreateBatchRequest,
+    UpdateBatchRequest,
+    BatchDetailResponse,
+    BatchChemicalSummary,
+)
 from app.application.dto.chemical_dto import BatchChemicalItem, BatchChemicalResponse
 from app.application.services.batch_service import BatchService
 from app.core.dependencies import require_roles
@@ -70,11 +75,32 @@ async def list_batches(
 @router.get("/{batch_id}")
 async def get_batch(
     batch_id: str,
-    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER, RoleName.TRADER)),
+    current_user: dict = Depends(
+        require_roles(RoleName.ADMIN, RoleName.FARMER, RoleName.TRADER, RoleName.DISTRIBUTOR, RoleName.IMPORTER)
+    ),
 ):
     async with get_async_session() as session:
         await ensure_farmer_owns_batch(session, current_user, batch_id)
-        return await create_batch_service(session).get_by_id(batch_id)
+        service = create_batch_service(session)
+        batch = await service.get_by_id(batch_id)
+        chemicals = await service.get_batch_chemicals(batch_id)
+        return BatchDetailResponse(
+            id=batch.id,
+            farm_id=batch.farm_id,
+            crop_type_id=batch.crop_type_id,
+            product_name=batch.product_name,
+            harvest_date=batch.harvest_date,
+            quantity=batch.quantity,
+            quantity_unit=batch.quantity_unit,
+            grade=batch.grade,
+            status=int(batch.status),
+            risk_level=int(batch.risk_level),
+            qr_code_url=batch.qr_code_url,
+            chemicals=[
+                BatchChemicalSummary(chemical_id=c.chemical_id, applied_at=c.applied_at)
+                for c in chemicals
+            ],
+        )
 
 
 @router.put("/{batch_id}")
@@ -124,9 +150,9 @@ async def get_batch_qr_image(
 async def set_batch_chemicals(
     batch_id: str,
     items: List[BatchChemicalItem],
-    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER)),
+    current_user: dict = Depends(require_roles(RoleName.FARMER)),
 ):
-    """Cập nhật danh sách hóa chất đã dùng cho lô (replace toàn bộ)."""
+    """Nông dân cập nhật danh sách hóa chất đã dùng cho lô (replace toàn bộ)."""
     async with get_async_session() as session:
         await ensure_farmer_owns_batch(session, current_user, batch_id)
         result = await create_batch_service(session).set_batch_chemicals(batch_id, items)
@@ -136,9 +162,11 @@ async def set_batch_chemicals(
 @router.get("/{batch_id}/chemicals")
 async def get_batch_chemicals(
     batch_id: str,
-    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER, RoleName.TRADER)),
+    current_user: dict = Depends(
+        require_roles(RoleName.ADMIN, RoleName.FARMER, RoleName.TRADER, RoleName.DISTRIBUTOR, RoleName.IMPORTER)
+    ),
 ):
-    """Lấy danh sách hóa chất đã dùng cho lô."""
+    """Xem danh sách hóa chất đã dùng cho lô — mọi role đều có thể xem."""
     async with get_async_session() as session:
         result = await create_batch_service(session).get_batch_chemicals(batch_id)
         return [BatchChemicalResponse(chemical_id=r.chemical_id, applied_at=r.applied_at) for r in result]
