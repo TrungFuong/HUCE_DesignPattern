@@ -2,12 +2,15 @@ import uuid
 
 from app.domain.interfaces.repositories.batch_repository import BatchRepository
 from app.domain.entities.batch import Batch
+from app.domain.entities.batch_chemical import BatchChemical
 from app.domain.enums.batch_status import BatchStatus
 from app.domain.enums.risk_level import RiskLevel
 from app.domain.interfaces.repositories.crop_type_repository import CropTypeRepository
 from app.domain.interfaces.repositories.farm_repository import FarmRepository
 from app.domain.interfaces.services.qr_service import QrService
 from app.domain.interfaces.repositories.shipment_repository import ShipmentRepository
+from app.domain.interfaces.repositories.batch_chemical_repository import BatchChemicalRepository
+from app.domain.interfaces.repositories.chemical_repository import ChemicalRepository
 
 
 class BatchService:
@@ -19,12 +22,16 @@ class BatchService:
         farm_repository: FarmRepository | None = None,
         crop_type_repository: CropTypeRepository | None = None,
         shipment_repository: ShipmentRepository | None = None,
+        batch_chemical_repository: BatchChemicalRepository | None = None,
+        chemical_repository: ChemicalRepository | None = None,
     ):
         self.batch_repository = batch_repository
         self.qr_service = qr_service
         self.farm_repository = farm_repository
         self.crop_type_repository = crop_type_repository
         self.shipment_repository = shipment_repository
+        self.batch_chemical_repository = batch_chemical_repository
+        self.chemical_repository = chemical_repository
 
     async def create_batch(self, data):
         await self._validate_batch_data(data)
@@ -120,3 +127,33 @@ class BatchService:
         batch = await self.get_by_id(batch_id)
         batch.qr_code_url = await self.qr_service.generate_for_batch(batch.id)
         return await self.batch_repository.update(batch)
+
+    async def set_batch_chemicals(self, batch_id: str, items: list) -> list[BatchChemical]:
+        """Farmer cập nhật danh sách hóa chất cho lô (replace toàn bộ)."""
+        if self.batch_chemical_repository is None:
+            raise ValueError("BatchChemicalRepository không khả dụng")
+        await self.get_by_id(batch_id)  # kiểm tra batch tồn tại
+        # Kiểm tra từng chemical_id hợp lệ
+        if self.chemical_repository:
+            for item in items:
+                chemical = await self.chemical_repository.find_by_id(item.chemical_id)
+                if chemical is None:
+                    raise ValueError(f"Hóa chất {item.chemical_id} không tồn tại")
+        # Soft-delete toàn bộ cũ, sau đó upsert mới
+        await self.batch_chemical_repository.delete_by_batch_id(batch_id)
+        new_items = [
+            BatchChemical(
+                batch_id=batch_id,
+                chemical_id=item.chemical_id,
+                applied_at=item.applied_at,
+            )
+            for item in items
+        ]
+        return await self.batch_chemical_repository.save_all(new_items)
+
+    async def get_batch_chemicals(self, batch_id: str) -> list[BatchChemical]:
+        """Lấy danh sách hóa chất đã dùng cho lô."""
+        await self.get_by_id(batch_id)  # kiểm tra batch tồn tại
+        if self.batch_chemical_repository is None:
+            return []
+        return await self.batch_chemical_repository.find_by_batch_id(batch_id)

@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
+from typing import List
 
 from app.application.dto.batch_dto import CreateBatchRequest, UpdateBatchRequest
+from app.application.dto.chemical_dto import BatchChemicalItem, BatchChemicalResponse
 from app.application.services.batch_service import BatchService
 from app.core.dependencies import require_roles
 from app.domain.enums.role import RoleName
 from app.infrastructure.database.sqlserver.repositories.sql_batch_repository import SqlBatchRepository
+from app.infrastructure.database.sqlserver.repositories.sql_batch_chemical_repository import SqlBatchChemicalRepository
+from app.infrastructure.database.sqlserver.repositories.sql_chemical_repository import SqlChemicalRepository
 from app.infrastructure.database.sqlserver.repositories.sql_crop_type_repository import SqlCropTypeRepository
 from app.infrastructure.database.sqlserver.repositories.sql_farm_repository import SqlFarmRepository
 from app.infrastructure.database.sqlserver.repositories.sql_shipment_repository import SqlShipmentRepository
@@ -22,6 +26,8 @@ def create_batch_service(session) -> BatchService:
         SqlFarmRepository(session),
         SqlCropTypeRepository(session),
         SqlShipmentRepository(session),
+        batch_chemical_repository=SqlBatchChemicalRepository(session),
+        chemical_repository=SqlChemicalRepository(session),
     )
 
 
@@ -112,3 +118,27 @@ async def get_batch_qr_image(
         await ensure_farmer_owns_batch(session, current_user, batch_id)
         batch = await create_batch_service(session).regenerate_qr_code(batch_id)
         return FileResponse(batch.qr_code_url, media_type="image/png")
+
+
+@router.put("/{batch_id}/chemicals")
+async def set_batch_chemicals(
+    batch_id: str,
+    items: List[BatchChemicalItem],
+    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER)),
+):
+    """Cập nhật danh sách hóa chất đã dùng cho lô (replace toàn bộ)."""
+    async with get_async_session() as session:
+        await ensure_farmer_owns_batch(session, current_user, batch_id)
+        result = await create_batch_service(session).set_batch_chemicals(batch_id, items)
+        return [BatchChemicalResponse(chemical_id=r.chemical_id, applied_at=r.applied_at) for r in result]
+
+
+@router.get("/{batch_id}/chemicals")
+async def get_batch_chemicals(
+    batch_id: str,
+    current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER, RoleName.TRADER)),
+):
+    """Lấy danh sách hóa chất đã dùng cho lô."""
+    async with get_async_session() as session:
+        result = await create_batch_service(session).get_batch_chemicals(batch_id)
+        return [BatchChemicalResponse(chemical_id=r.chemical_id, applied_at=r.applied_at) for r in result]

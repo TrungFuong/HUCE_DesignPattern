@@ -25,6 +25,7 @@ from app.presentation.api.v1.traceability_controller import router as traceabili
 from app.presentation.api.v1.user_controller import router as user_router
 from app.presentation.api.v1.blockchain_controller import router as blockchain_router
 from app.presentation.api.v1.dashboard_controller import router as dashboard_router
+from app.presentation.api.v1.chemical_controller import router as chemical_router
 
 logger = logging.getLogger(__name__)
 
@@ -111,4 +112,5 @@ def create_app() -> FastAPI:
     app.include_router(user_router)
     app.include_router(blockchain_router)
     app.include_router(dashboard_router)
+    app.include_router(chemical_router)
     return app

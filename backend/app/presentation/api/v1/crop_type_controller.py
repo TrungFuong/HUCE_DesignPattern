@@ -5,6 +5,7 @@ from app.application.services.crop_type_service import CropTypeService
 from app.core.dependencies import require_roles
 from app.domain.enums.role import RoleName
 from app.infrastructure.database.sqlserver.repositories.sql_batch_repository import SqlBatchRepository
+from app.infrastructure.database.sqlserver.repositories.sql_chemical_repository import SqlChemicalRepository
 from app.infrastructure.database.sqlserver.repositories.sql_crop_type_repository import SqlCropTypeRepository
 from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
 from app.infrastructure.database.sqlserver.session import get_async_session
@@ -17,6 +18,7 @@ def create_crop_type_service(session) -> CropTypeService:
         SqlCropTypeRepository(session),
         SqlBatchRepository(session),
         SqlRiskRuleRepository(session),
+        chemical_repository=SqlChemicalRepository(session),
     )
 
 
