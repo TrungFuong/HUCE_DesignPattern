@@ -3,12 +3,18 @@ import uuid
 from app.application.dto.crop_type_dto import CropTypeRequest
 from app.domain.entities.crop_type import CropType
 from app.domain.interfaces.repositories.crop_type_repository import CropTypeRepository
+from app.domain.interfaces.repositories.chemical_repository import ChemicalRepository
 
 
 class CropTypeService:
 
-    def __init__(self, crop_type_repository: CropTypeRepository):
+    def __init__(
+        self,
+        crop_type_repository: CropTypeRepository,
+        chemical_repository: ChemicalRepository | None = None,
+    ):
         self.crop_type_repository = crop_type_repository
+        self.chemical_repository = chemical_repository
 
     async def create_crop_type(self, data: CropTypeRequest) -> CropType:
         code = self._normalize_code(data.code)
@@ -52,6 +58,10 @@ class CropTypeService:
 
     async def delete_crop_type(self, crop_type_id: str):
         await self.get_by_id(crop_type_id)
+        if self.chemical_repository:
+            chemicals = await self.chemical_repository.find_by_crop_type_id(crop_type_id)
+            if chemicals:
+                raise ValueError("Không thể xóa loại nông sản đang có hóa chất — hãy xóa hóa chất trước")
         await self.crop_type_repository.delete(crop_type_id)
         return {"message": "Crop type deleted successfully"}
 

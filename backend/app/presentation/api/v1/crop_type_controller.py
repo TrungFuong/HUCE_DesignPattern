@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.application.dto.crop_type_dto import CropTypeRequest
 from app.application.services.crop_type_service import CropTypeService
 from app.core.dependencies import get_current_user
+from app.infrastructure.database.sqlserver.repositories.sql_chemical_repository import SqlChemicalRepository
 from app.infrastructure.database.sqlserver.repositories.sql_crop_type_repository import SqlCropTypeRepository
 from app.infrastructure.database.sqlserver.session import get_async_session
 
@@ -15,7 +16,10 @@ async def create_crop_type(
     current_user: dict = Depends(get_current_user),
 ):
     async with get_async_session() as session:
-        crop_type_service = CropTypeService(SqlCropTypeRepository(session))
+        crop_type_service = CropTypeService(
+            SqlCropTypeRepository(session),
+            chemical_repository=SqlChemicalRepository(session),
+        )
         return await crop_type_service.create_crop_type(request)
 
 
@@ -24,7 +28,10 @@ async def list_crop_types(
     current_user: dict = Depends(get_current_user),
 ):
     async with get_async_session() as session:
-        crop_type_service = CropTypeService(SqlCropTypeRepository(session))
+        crop_type_service = CropTypeService(
+            SqlCropTypeRepository(session),
+            chemical_repository=SqlChemicalRepository(session),
+        )
         return await crop_type_service.list_crop_types()
 
 
@@ -34,7 +41,10 @@ async def get_crop_type(
     current_user: dict = Depends(get_current_user),
 ):
     async with get_async_session() as session:
-        crop_type_service = CropTypeService(SqlCropTypeRepository(session))
+        crop_type_service = CropTypeService(
+            SqlCropTypeRepository(session),
+            chemical_repository=SqlChemicalRepository(session),
+        )
         return await crop_type_service.get_by_code(code)
 
 
@@ -45,7 +55,10 @@ async def update_crop_type(
     current_user: dict = Depends(get_current_user),
 ):
     async with get_async_session() as session:
-        crop_type_service = CropTypeService(SqlCropTypeRepository(session))
+        crop_type_service = CropTypeService(
+            SqlCropTypeRepository(session),
+            chemical_repository=SqlChemicalRepository(session),
+        )
         return await crop_type_service.update_crop_type(crop_type_id, request)
 
 
@@ -55,5 +68,8 @@ async def delete_crop_type(
     current_user: dict = Depends(get_current_user),
 ):
     async with get_async_session() as session:
-        crop_type_service = CropTypeService(SqlCropTypeRepository(session))
+        crop_type_service = CropTypeService(
+            SqlCropTypeRepository(session),
+            chemical_repository=SqlChemicalRepository(session),
+        )
         return await crop_type_service.delete_crop_type(crop_type_id)
