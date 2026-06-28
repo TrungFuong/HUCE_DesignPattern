@@ -1,0 +1,77 @@
+@if (isTracePage) {
+<router-outlet />
+} @else if (!token) {
+<main class="shell auth-shell">
+  <section class="hero-panel">
+    <nav class="topbar" aria-label="Điều hướng chính">
+      <div class="brand">
+        <span class="brand-mark">OC</span>
+        <span>OCOP Traceability</span>
+      </div>
+    </nav>
+
+    <div class="hero-grid">
+      <section class="intro">
+        <p class="eyebrow">Truy xuất nguồn gốc chủ động</p>
+        <h1>{{ title }}</h1>
+        <p class="lead">
+          Quản lý nông trại, lô nông sản, vận chuyển, cảm biến IoT và xác minh
+          blockchain trong một luồng dữ liệu minh bạch.
+        </p>
+
+        <div class="flow-strip" aria-label="Luồng truy xuất">
+          <span><span aria-hidden="true">🌱</span> Nông trại</span>
+          <span><span aria-hidden="true">📦</span> Lô sản phẩm</span>
+          <span><span aria-hidden="true">📡</span> Cảm biến IoT</span>
+          <span><span aria-hidden="true">🔗</span> Blockchain</span>
+          <span><span aria-hidden="true">📱</span> QR công khai</span>
+        </div>
+      </section>
+
+      <section class="auth-panel" aria-label="Bảng xác thực">
+        <div class="auth-header">
+          <div>
+            <p class="eyebrow">Tài khoản hệ thống</p>
+            <h2>Đăng nhập</h2>
+          </div>
+        </div>
+
+        <form class="auth-form" (ngSubmit)="submitAuth()" #authForm="ngForm">
+          <label>
+            Email
+            <input name="email" type="email" [(ngModel)]="form.email" placeholder="farmer@ocop.vn" required />
+          </label>
+
+          <label>
+            <span>Mật khẩu <span class="required">*</span></span>
+            <div class="password-input-wrapper">
+              <input name="password" [type]="showLoginPassword ? 'text' : 'password'" [(ngModel)]="form.password"
+                required autocomplete="current-password" />
+              <button type="button" class="toggle-password-btn" (click)="showLoginPassword = !showLoginPassword"
+                tabindex="-1">
+                {{ showLoginPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+          </label>
+
+          <button class="primary-action" type="submit" [disabled]="authForm.invalid || isSubmitting">
+            {{ isSubmitting ? "Đang xử lý..." : "Đăng nhập" }}
+          </button>
+        </form>
+
+        @if (authMessage) {
+        <p class="notice success">{{ authMessage }}</p>
+        }
+
+        @if (authError) {
+        <p class="notice error">{{ authError }}</p>
+        }
+      </section>
+    </div>
+  </section>
+</main>
+} @else {
+<app-dashboard [authMessage]="authMessage" (logoutRequested)="logout()">
+  <router-outlet />
+</app-dashboard>
+}

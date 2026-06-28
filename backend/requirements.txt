@@ -6,6 +6,7 @@ motor
 redis
 paho-mqtt
 web3
+py-solc-x
 pydantic-settings
 python-jose[cryptography]
 passlib[bcrypt]

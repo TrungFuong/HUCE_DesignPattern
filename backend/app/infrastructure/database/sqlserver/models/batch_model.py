@@ -1,18 +1,24 @@
-from sqlalchemy import Column, DateTime, Enum, String
+from sqlalchemy import CheckConstraint, Column, DateTime, Float, ForeignKey, Index, Integer, String, Unicode
 from datetime import datetime
 
 from app.infrastructure.database.sqlserver.models import Base
-from app.domain.enums.batch_status import BatchStatus
-from app.domain.enums.risk_level import RiskLevel
 
 
 class BatchModel(Base):
     __tablename__ = "batches"
+    __table_args__ = (
+        CheckConstraint("quantity > 0", name="ck_batches_quantity_positive"),
+        Index("ix_batches_farm_id", "farm_id"),
+    )
 
     id = Column(String(36), primary_key=True, index=True)
-    farm_id = Column(String(36), nullable=False)
-    product_name = Column(String(255), nullable=False)
+    farm_id = Column(String(36), ForeignKey("farms.id"), nullable=False)
+    crop_type_id = Column(String(36), ForeignKey("crop_types.id"), nullable=True)
+    product_name = Column(Unicode(255), nullable=False)
     harvest_date = Column(DateTime, default=datetime.utcnow)
-    status = Column(Enum(BatchStatus), nullable=False)
-    risk_level = Column(Enum(RiskLevel), nullable=False)
+    quantity = Column(Float, nullable=False)
+    quantity_unit = Column(Unicode(20), nullable=False, default="kg")
+    grade = Column(Unicode(50), nullable=True)
+    status = Column(Integer, nullable=False)
+    risk_level = Column(Integer, nullable=False)
     qr_code_url = Column(String(500), nullable=True)

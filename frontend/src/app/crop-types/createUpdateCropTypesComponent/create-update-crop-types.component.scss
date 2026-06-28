@@ -1,0 +1,145 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.modal-backdrop {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background: rgba(12, 30, 18, 0.42);
+}
+
+.modal {
+  width: min(720px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 26px 80px rgba(12, 30, 18, 0.24);
+}
+
+.modal-header,
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.modal-header {
+  border-bottom: 1px solid #dce8d8;
+  padding: 22px 24px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #376044;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.icon-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: #eef5eb;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.crop-type-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 24px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: #243c2b;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+input,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #c8d8c4;
+  border-radius: 8px;
+  padding: 12px 13px;
+  color: #17261d;
+  background: #ffffff;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #2f6f3e;
+  box-shadow: 0 0 0 3px rgba(47, 111, 62, 0.14);
+}
+
+.full-span {
+  grid-column: 1 / -1;
+}
+
+.modal-actions {
+  border-top: 1px solid #dce8d8;
+  padding-top: 18px;
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 16px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.primary-button {
+  color: #ffffff;
+  background: #2f6f3e;
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.secondary-button {
+  color: #24472e;
+  background: #dbe8d5;
+}
+
+@media (max-width: 700px) {
+  .crop-type-form {
+    grid-template-columns: 1fr;
+  }
+}

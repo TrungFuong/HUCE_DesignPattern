@@ -1,0 +1,34 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Chi tiết loại nông sản">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Chi tiết loại nông sản</p>
+        <h2>{{ cropType.name }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng chi tiết" (click)="close.emit()">×</button>
+    </header>
+
+    <div class="detail-grid">
+      <article>
+        <span>ID</span>
+        <strong>{{ cropType.id }}</strong>
+      </article>
+      <article>
+        <span>Mã loại</span>
+        <strong>{{ cropType.code }}</strong>
+      </article>
+      <article class="full-span">
+        <span>Tên loại nông sản</span>
+        <strong>{{ cropType.name }}</strong>
+      </article>
+      <article class="full-span">
+        <span>Mô tả</span>
+        <strong>{{ cropType.description || 'Chưa cập nhật' }}</strong>
+      </article>
+    </div>
+
+    <footer class="modal-actions">
+      <button type="button" (click)="close.emit()">Đóng</button>
+    </footer>
+  </section>
+</div>

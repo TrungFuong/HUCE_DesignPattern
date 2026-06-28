@@ -1,0 +1,113 @@
+<section class="risk-rules-page">
+  @if (toastMessage) {
+    <div class="toast" [class.error]="toastType === 'error'" role="status">
+      {{ toastMessage }}
+    </div>
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Risk rule</p>
+      <h1>Quản lý risk rule</h1>
+    </div>
+    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+  </header>
+
+  <section class="table-panel">
+    @if (isLoading) {
+      <p class="empty-state">Đang tải danh sách risk rule...</p>
+    } @else if (!riskRules.length) {
+      <p class="empty-state">Chưa có risk rule nào. Hãy tạo mới bản ghi đầu tiên.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Loại nông sản</th>
+              <th>Nhiệt độ</th>
+              <th>Độ ẩm</th>
+              <th>Độ ẩm đất</th>
+              <th>Thời lượng</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (riskRule of pagedRiskRules; track riskRule.id; let index = $index) {
+              <tr>
+                <td class="index-cell">{{ getRowNumber(index) }}</td>
+                <td>
+                  <strong>{{ getCropTypeName(riskRule.crop_type_id) }}</strong>
+                </td>
+                <td>{{ riskRule.min_temperature }} - {{ riskRule.max_temperature }}</td>
+                <td>{{ riskRule.min_humidity }} - {{ riskRule.max_humidity }}</td>
+                <td>
+                  {{ riskRule.min_soil_moisture ?? 'N/A' }} - {{ riskRule.max_soil_moisture ?? 'N/A' }}
+                </td>
+                <td>{{ riskRule.duration_minutes }} phút</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="view-button" type="button" (click)="openDetail(riskRule)">Xem chi tiết</button>
+                    <button class="edit-button" type="button" (click)="openEditForm(riskRule)">Sửa</button>
+                    <button class="delete-button" type="button" (click)="openDeleteConfirm(riskRule)">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="pagination">
+        <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+        <div>
+          <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            Trước
+          </button>
+          <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            Sau
+          </button>
+        </div>
+      </footer>
+    }
+  </section>
+</section>
+
+@if (isFormOpen) {
+  <app-create-update-risk-rules
+    [riskRule]="editingRiskRule"
+    [cropTypes]="formCropTypes"
+    [cropTypesError]="cropTypesError"
+    [isLoadingCropTypes]="isLoadingCropTypes"
+    (cancel)="closeForm()"
+    (save)="saveRiskRule($event)"
+  />
+}
+
+@if (viewingRiskRule) {
+  <app-view-detail-risk-rules
+    [riskRule]="viewingRiskRule"
+    [cropTypeName]="getCropTypeName(viewingRiskRule.crop_type_id)"
+    (close)="viewingRiskRule = null"
+  />
+}
+
+@if (deletingRiskRule) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-label="Xác nhận xóa risk rule">
+      <header>
+        <p class="eyebrow">Xác nhận xóa</p>
+        <h2>Xóa risk rule?</h2>
+      </header>
+      <p>
+        Bạn có chắc muốn xóa risk rule của
+        <strong>{{ getCropTypeName(deletingRiskRule.crop_type_id) }}</strong> khong?
+        Hành động này không thể hoàn tác.
+      </p>
+      <footer>
+        <button class="cancel-delete-button" type="button" (click)="deletingRiskRule = null">Hủy</button>
+        <button class="confirm-delete-button" type="button" (click)="confirmDelete()">Xóa</button>
+      </footer>
+    </section>
+  </div>
+}

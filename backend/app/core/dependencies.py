@@ -1,7 +1,8 @@
 from functools import lru_cache
 from typing import AsyncGenerator
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -11,8 +12,11 @@ from app.infrastructure.blockchain.smart_contract_adapter import SmartContractAd
 from app.infrastructure.blockchain.web3_client import Web3Client
 from app.infrastructure.database.mongodb.mongo_client import get_mongo_database
 from app.infrastructure.database.sqlserver.repositories.sql_batch_repository import SqlBatchRepository
+from app.infrastructure.database.sqlserver.repositories.sql_container_repository import SqlContainerRepository
+from app.infrastructure.database.sqlserver.repositories.sql_crop_type_repository import SqlCropTypeRepository
 from app.infrastructure.database.sqlserver.repositories.sql_farm_repository import SqlFarmRepository
 from app.infrastructure.database.sqlserver.repositories.sql_shipment_repository import SqlShipmentRepository
+from app.infrastructure.database.sqlserver.repositories.sql_user_repository import SqlUserRepository
 from app.infrastructure.database.sqlserver.session import get_async_session
 from app.infrastructure.database.mongodb.repositories.mongo_sensor_log_repository import MongoSensorLogRepository
 from app.infrastructure.queue.redis_client import get_redis_client
@@ -28,10 +32,13 @@ from app.application.observers.mongo_sensor_observer import MongoSensorObserver
 from app.application.observers.risk_observer import RiskObserver
 from app.application.services.batch_service import BatchService
 from app.application.services.blockchain_service import BlockchainService
+from app.application.services.container_service import ContainerService
+from app.application.services.crop_type_service import CropTypeService
 from app.application.services.farm_service import FarmService
 from app.application.services.risk_service import RiskService
 from app.application.services.sensor_service import SensorService
 from app.application.services.shipment_service import ShipmentService
+from app.application.services.user_service import UserService
 from app.infrastructure.database.sqlserver.repositories.sql_risk_rule_repository import SqlRiskRuleRepository
 
 
@@ -53,14 +60,18 @@ async def get_redis():
     yield get_redis_client()
 
 
-async def get_current_user(authorization: str | None = Header(default=None)):
-    if not authorization:
+_http_bearer = HTTPBearer(auto_error=False)
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_http_bearer),
+) -> dict:
+    if not credentials:
         raise HTTPException(status_code=401, detail="Authorization header required")
-    token = authorization.replace("Bearer ", "")
     try:
-        payload = decode_access_token(token)
+        payload = decode_access_token(credentials.credentials)
     except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
     return payload
 
 
@@ -92,15 +103,38 @@ def get_blockchain_service() -> BlockchainService:
 
 
 def get_batch_service(db_session: AsyncSession = Depends(get_db_session)) -> BatchService:
-    return BatchService(batch_repository=SqlBatchRepository(db_session), qr_service=get_qr_service())
+    return BatchService(
+        batch_repository=SqlBatchRepository(db_session),
+        qr_service=get_qr_service(),
+        farm_repository=SqlFarmRepository(db_session),
+    )
 
 
 def get_farm_service(db_session: AsyncSession = Depends(get_db_session)) -> FarmService:
-    return FarmService(farm_repository=SqlFarmRepository(db_session))
+    return FarmService(
+        farm_repository=SqlFarmRepository(db_session),
+        user_repository=SqlUserRepository(db_session),
+    )
 
 
 def get_shipment_service(db_session: AsyncSession = Depends(get_db_session)) -> ShipmentService:
-    return ShipmentService(shipment_repository=SqlShipmentRepository(db_session))
+    return ShipmentService(
+        shipment_repository=SqlShipmentRepository(db_session),
+        batch_repository=SqlBatchRepository(db_session),
+        user_repository=SqlUserRepository(db_session),
+        container_repository=SqlContainerRepository(db_session),
+    )
+
+
+def get_container_service(db_session: AsyncSession = Depends(get_db_session)) -> ContainerService:
+    return ContainerService(
+        container_repository=SqlContainerRepository(db_session),
+        shipment_repository=SqlShipmentRepository(db_session),
+    )
+
+
+def get_user_service(db_session: AsyncSession = Depends(get_db_session)) -> UserService:
+    return UserService(user_repository=SqlUserRepository(db_session))
 
 
 def get_sensor_service(mongo_db=Depends(get_mongo_db)) -> SensorService:
@@ -109,6 +143,10 @@ def get_sensor_service(mongo_db=Depends(get_mongo_db)) -> SensorService:
 
 def get_risk_service(db_session: AsyncSession = Depends(get_db_session)) -> RiskService:
     return RiskService(risk_rule_repository=SqlRiskRuleRepository(db_session))
+
+
+def get_crop_type_service(db_session: AsyncSession = Depends(get_db_session)) -> CropTypeService:
+    return CropTypeService(crop_type_repository=SqlCropTypeRepository(db_session))
 
 
 def get_traceability_facade(
@@ -122,6 +160,9 @@ def get_traceability_facade(
         sensor_service=get_sensor_service(mongo_db),
         blockchain_service=get_blockchain_service(),
         hash_service=get_hash_service(),
+        user_service=get_user_service(db_session),
+        container_service=get_container_service(db_session),
+        crop_type_service=get_crop_type_service(db_session),
         trace_response_builder=TraceResponseBuilder(),
     )
 
@@ -135,7 +176,6 @@ def get_iot_pipeline_facade(
         risk_observer=RiskObserver(
             get_risk_service(db_session),
             get_batch_service(db_session),
-            get_farm_service(db_session),
         ),
         blockchain_observer=BlockchainObserver(RedisQueueAdapter(get_redis_client())),
         dashboard_observer=DashboardObserver(),

@@ -1,0 +1,126 @@
+<section class="batches-page">
+  @if (toastMessage) {
+    <div class="toast" [class.error]="toastType === 'error'" role="status">
+      {{ toastMessage }}
+    </div>
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Danh mục lô sản phẩm</p>
+      <h1>Quản lý lô sản phẩm</h1>
+    </div>
+    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+  </header>
+
+  <section class="table-panel">
+    @if (isLoading) {
+      <p class="empty-state">Đang tải danh sách lô sản phẩm...</p>
+    } @else if (!batches.length) {
+      <p class="empty-state">Chưa có lô sản phẩm nào. Hãy tạo mới bản ghi đầu tiên.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tên sản phẩm</th>
+              <th>Nông trại</th>
+              <th>Loại nông sản</th>
+              <th>Ngày thu hoạch</th>
+              <th>Số lượng</th>
+              <th>Phân loại</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (batch of pagedBatches; track batch.id; let index = $index) {
+              <tr>
+                <td class="index-cell">{{ getRowNumber(index) }}</td>
+                <td>
+                  <strong>{{ batch.product_name }}</strong>
+                </td>
+                <td>{{ getFarmName(batch.farm_id) }}</td>
+                <td>{{ getCropTypeName(batch.crop_type_id) }}</td>
+                <td>{{ batch.harvest_date | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ batch.quantity }} {{ batch.quantity_unit }}</td>
+                <td>{{ batch.grade || 'Chưa cập nhật' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="qr-button" type="button" (click)="openQr(batch)">Show QR</button>
+                    <button class="view-button" type="button" (click)="openDetail(batch)">Xem chi tiết</button>
+                    <button class="edit-button" type="button" (click)="openEditForm(batch)">Sửa</button>
+                    <button class="delete-button" type="button" (click)="openDeleteConfirm(batch)">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="pagination">
+        <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+        <div>
+          <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            Trước
+          </button>
+          <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            Sau
+          </button>
+        </div>
+      </footer>
+    }
+  </section>
+</section>
+
+@if (isFormOpen) {
+  <app-create-update-batches
+    [batch]="editingBatch"
+    [farms]="farms"
+    [farmsError]="farmsError"
+    [isLoadingFarms]="isLoadingFarms"
+    [cropTypes]="cropTypes"
+    [cropTypesError]="cropTypesError"
+    [isLoadingCropTypes]="isLoadingCropTypes"
+    (cancel)="closeForm()"
+    (save)="saveBatch($event)"
+  />
+}
+
+@if (viewingBatch) {
+  <app-view-detail-batches
+    [batch]="viewingBatch"
+    [farmName]="getFarmName(viewingBatch.farm_id)"
+    [cropTypeName]="getCropTypeName(viewingBatch.crop_type_id)"
+    (close)="viewingBatch = null"
+  />
+}
+
+@if (qrBatch) {
+  <app-show-qr-batches
+    [batch]="qrBatch"
+    [qrImageUrl]="getQrImageUrl(qrBatch)"
+    [publicTraceUrl]="getPublicTraceUrl(qrBatch)"
+    (close)="qrBatch = null"
+  />
+}
+
+@if (deletingBatch) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-label="Xác nhận xóa lô sản phẩm">
+      <header>
+        <p class="eyebrow">Xác nhận xóa</p>
+        <h2>Xóa lô sản phẩm?</h2>
+      </header>
+      <p>
+        Bạn có chắc muốn xóa lô sản phẩm <strong>{{ deletingBatch.product_name }}</strong> không?
+        Hành động này không thể hoàn tác.
+      </p>
+      <footer>
+        <button class="cancel-delete-button" type="button" (click)="deletingBatch = null">Hủy</button>
+        <button class="confirm-delete-button" type="button" (click)="confirmDelete()">Xóa</button>
+      </footer>
+    </section>
+  </div>
+}

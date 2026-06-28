@@ -1,0 +1,93 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Quản lý container</p>
+        <h2>{{ title }}</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng form" (click)="cancel.emit()">×</button>
+    </header>
+
+    <form class="container-form" (ngSubmit)="submit()" #containerForm="ngForm">
+      <label>
+        Mã container
+        <input name="code" type="text" [(ngModel)]="form.code" placeholder="VD: CONT-001" required />
+      </label>
+
+      <label>
+        Loại container
+        <input name="type" type="text" [(ngModel)]="form.type" placeholder="VD: Thùng lạnh" required />
+      </label>
+
+      <label>
+        Sức chứa
+        <input name="capacity" type="number" min="0.01" step="0.01" [(ngModel)]="form.capacity" required />
+      </label>
+
+      <label>
+        Đơn vị
+        <input name="capacity_unit" type="text" [(ngModel)]="form.capacity_unit" placeholder="kg" required />
+      </label>
+
+      <label>
+        Chất liệu
+        <input name="material" type="text" [(ngModel)]="form.material" placeholder="VD: Nhựa, inox" />
+      </label>
+
+      <label>
+        Trạng thái
+        <select name="status" [(ngModel)]="form.status" required>
+          @for (option of statusOptions; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="toggle-label full-span">
+        <input
+          name="is_temperature_controlled"
+          type="checkbox"
+          [(ngModel)]="form.is_temperature_controlled"
+          (ngModelChange)="toggleTemperatureControl()"
+        />
+        Kiểm soát nhiệt độ
+      </label>
+
+      <label>
+        Nhiệt độ tối thiểu
+        <input
+          name="min_temperature"
+          type="number"
+          step="0.1"
+          [(ngModel)]="form.min_temperature"
+          [disabled]="!form.is_temperature_controlled"
+          placeholder="VD: 2"
+        />
+      </label>
+
+      <label>
+        Nhiệt độ tối đa
+        <input
+          name="max_temperature"
+          type="number"
+          step="0.1"
+          [(ngModel)]="form.max_temperature"
+          [disabled]="!form.is_temperature_controlled"
+          placeholder="VD: 8"
+        />
+      </label>
+
+      <label class="full-span">
+        Mô tả
+        <textarea name="description" rows="4" [(ngModel)]="form.description" placeholder="Ghi chú thêm"></textarea>
+      </label>
+
+      <footer class="modal-actions full-span">
+        <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
+        <button class="primary-button" type="submit" [disabled]="containerForm.invalid">
+          {{ container ? 'Cập nhật' : 'Tạo mới' }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

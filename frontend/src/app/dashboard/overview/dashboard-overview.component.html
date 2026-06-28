@@ -1,0 +1,252 @@
+<section class="summary-grid" aria-label="Chỉ số tổng quan">
+  @for (card of dashboardCards; track card.label) {
+    <article>
+      <span>{{ card.label }}</span>
+      <strong>{{ card.value }}</strong>
+      <p>{{ card.note }}</p>
+    </article>
+  }
+</section>
+
+<section class="content-panel">
+  <div class="panel-heading">
+    <div>
+      <p class="eyebrow">Dữ liệu vận hành</p>
+      <h2>Tổng quan hệ thống</h2>
+    </div>
+    <button class="secondary-action" type="button" (click)="loadDashboardData()" [disabled]="isLoading">
+      {{ isLoading ? 'Đang tải...' : 'Làm mới' }}
+    </button>
+  </div>
+
+  @if (errorMessage) {
+    <p class="notice error">{{ errorMessage }}</p>
+  }
+
+  @if (isLoading) {
+    <p class="empty-state">Đang thu thập dữ liệu từ nông trại và lô sản phẩm...</p>
+  } @else {
+    <div class="chart-grid" aria-label="Biểu đồ tổng quan">
+      <section class="chart-panel">
+        <header>
+          <p class="eyebrow">Chart</p>
+          <h3>Nông trại</h3>
+        </header>
+        <div class="bar-chart">
+          @for (item of farmChartItems; track item.label) {
+            <article>
+              <div class="bar-label">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+              </div>
+              <div class="bar-track">
+                <span class="bar-fill farm" [style.width.%]="item.percent"></span>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="chart-panel">
+        <header>
+          <p class="eyebrow">Chart</p>
+          <h3>Trạng thái lô</h3>
+        </header>
+        <div class="bar-chart">
+          @for (item of batchStatusChartItems; track item.label) {
+            <article>
+              <div class="bar-label">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+              </div>
+              <div class="bar-track">
+                <span class="bar-fill batch" [style.width.%]="item.percent"></span>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="chart-panel">
+        <header>
+          <p class="eyebrow">Chart</p>
+          <h3>Rủi ro lô</h3>
+        </header>
+        <div class="bar-chart">
+          @for (item of riskChartItems; track item.label) {
+            <article>
+              <div class="bar-label">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+              </div>
+              <div class="bar-track">
+                <span class="bar-fill risk" [style.width.%]="item.percent"></span>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="chart-panel">
+        <header>
+          <p class="eyebrow">Chart</p>
+          <h3>Tiến độ vận chuyển</h3>
+        </header>
+        <div class="bar-chart">
+          @for (item of shipmentProgressChartItems; track item.label) {
+            <article>
+              <div class="bar-label">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}%</strong>
+              </div>
+              <div class="bar-track">
+                <span class="bar-fill shipment" [style.width.%]="item.percent"></span>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    </div>
+
+    <div class="stat-section-grid">
+      <section class="stat-section">
+        <header>
+          <p class="eyebrow">Nông trại</p>
+          <h3>Thống kê nông trại</h3>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chỉ số</th>
+                <th>Giá trị</th>
+                <th>Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of farmStatisticRows; track row.label) {
+                <tr>
+                  <td>{{ row.label }}</td>
+                  <td><strong>{{ row.value }}</strong></td>
+                  <td>{{ row.note }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="stat-section">
+        <header>
+          <p class="eyebrow">Lô sản phẩm</p>
+          <h3>Thống kê sản xuất</h3>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chỉ số</th>
+                <th>Giá trị</th>
+                <th>Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of batchStatisticRows; track row.label) {
+                <tr>
+                  <td>{{ row.label }}</td>
+                  <td><strong>{{ row.value }}</strong></td>
+                  <td>{{ row.note }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <section class="stat-section">
+      <header>
+        <p class="eyebrow">Trạng thái lô</p>
+        <h3>Bảng phân bổ trạng thái</h3>
+      </header>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Trạng thái</th>
+              <th>Số lô</th>
+              <th>Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of batchStatusRows; track row.label) {
+              <tr>
+                <td>{{ row.label }}</td>
+                <td><strong>{{ row.value }}</strong></td>
+                <td>{{ row.note }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="stat-section-grid">
+      <section class="stat-section">
+        <header>
+          <p class="eyebrow">Vận chuyển</p>
+          <h3>Thống kê chuyến mẫu</h3>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chỉ số</th>
+                <th>Giá trị</th>
+                <th>Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of shipmentStatisticRows; track row.label) {
+                <tr>
+                  <td>{{ row.label }}</td>
+                  <td><strong>{{ row.value }}</strong></td>
+                  <td>{{ row.note }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="stat-section">
+        <header>
+          <p class="eyebrow">Fake data</p>
+          <h3>Chuyến vận chuyển</h3>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã chuyến</th>
+                <th>Tuyến</th>
+                <th>Trạng thái</th>
+                <th>Tiến độ</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (shipment of fakeShipments; track shipment.code) {
+                <tr>
+                  <td><strong>{{ shipment.code }}</strong></td>
+                  <td>{{ shipment.route }}</td>
+                  <td>{{ shipment.status }}</td>
+                  <td>{{ shipment.progress }}%</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  }
+</section>

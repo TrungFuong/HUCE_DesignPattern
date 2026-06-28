@@ -14,5 +14,17 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_all(self) -> list[User]:
+        pass
+
+    @abstractmethod
     async def save(self, user: User) -> User:
+        pass
+
+    @abstractmethod
+    async def update(self, user: User) -> User:
+        pass
+
+    @abstractmethod
+    async def delete(self, user_id: str) -> bool:
         pass

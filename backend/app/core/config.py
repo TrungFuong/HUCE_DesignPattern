@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     blockchain_rpc_url: str = "http://127.0.0.1:7545"
     contract_address: str = ""
     private_key: str = ""
+    public_base_url: str = "http://localhost:4200"
     jwt_secret_key: str = "change-me"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
