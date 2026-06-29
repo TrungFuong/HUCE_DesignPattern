@@ -1,0 +1,146 @@
+<section class="chemicals-page">
+  @if (toastMessage) {
+    <div class="toast" [class.error]="toastType === 'error'" role="status">
+      {{ toastMessage }}
+    </div>
+  }
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Danh mục hóa chất</p>
+      <h1>Quản lý hóa chất</h1>
+    </div>
+    @if (!isReadOnly) {
+      <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    }
+  </header>
+
+  <section class="table-panel">
+    @if (isLoading) {
+      <p class="empty-state">Đang tải danh sách hóa chất...</p>
+    } @else if (!chemicals.length) {
+      <p class="empty-state">Chưa có hóa chất nào trong hệ thống.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tên hóa chất</th>
+              <th>Loại nông sản</th>
+              <th>Đơn vị</th>
+              <th>Mô tả</th>
+              @if (!isReadOnly) {
+                <th>Thao tác</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (chemical of pagedChemicals; track chemical.id; let index = $index) {
+              <tr>
+                <td class="index-cell">{{ getRowNumber(index) }}</td>
+                <td>
+                  <strong>{{ chemical.name }}</strong>
+                </td>
+                <td>{{ getCropTypeName(chemical.crop_type_id) }}</td>
+                <td>{{ chemical.unit }}</td>
+                <td>{{ chemical.description || 'Chưa cập nhật' }}</td>
+                @if (!isReadOnly) {
+                  <td>
+                    <div class="row-actions">
+                      <button class="edit-button" type="button" (click)="openEditForm(chemical)">Sửa</button>
+                      <button class="delete-button" type="button" (click)="openDeleteConfirm(chemical)">Xóa</button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="pagination">
+        <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+        <div>
+          <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            Trước
+          </button>
+          <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            Sau
+          </button>
+        </div>
+      </footer>
+    }
+  </section>
+</section>
+
+@if (isFormOpen) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="form-modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
+      <header class="modal-header">
+        <div>
+          <p class="eyebrow">Hóa chất</p>
+          <h2>{{ title }}</h2>
+        </div>
+        <button class="icon-button" type="button" aria-label="Đóng form" (click)="closeForm()">×</button>
+      </header>
+
+      <form class="chemical-form" (ngSubmit)="submitForm()" #chemicalForm="ngForm">
+        <label>
+          Loại nông sản
+          <select name="crop_type_id" [(ngModel)]="form.crop_type_id" required>
+            <option value="" disabled>Chọn loại nông sản</option>
+            @for (cropType of cropTypes; track cropType.id) {
+              <option [value]="cropType.id">{{ cropType.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Tên hóa chất
+          <input name="name" type="text" [(ngModel)]="form.name" placeholder="VD: NPK 16-16-8" required />
+        </label>
+
+        <label>
+          Đơn vị
+          <input name="unit" type="text" [(ngModel)]="form.unit" placeholder="VD: kg, ml, g" required />
+        </label>
+
+        <label class="full-span">
+          Mô tả
+          <textarea name="description" rows="4" [(ngModel)]="form.description" placeholder="Thông tin ghi chú"></textarea>
+        </label>
+
+        @if (cropTypesError) {
+          <p class="field-error full-span">{{ cropTypesError }}</p>
+        }
+
+        <footer class="modal-actions full-span">
+          <button class="secondary-button" type="button" (click)="closeForm()">Hủy</button>
+          <button class="primary-button" type="submit" [disabled]="chemicalForm.invalid || isLoadingCropTypes">
+            {{ editingChemical ? 'Cập nhật' : 'Tạo mới' }}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}
+
+@if (deletingChemical) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-label="Xác nhận xóa hóa chất">
+      <header>
+        <p class="eyebrow">Xác nhận xóa</p>
+        <h2>Xóa hóa chất?</h2>
+      </header>
+      <p>
+        Bạn có chắc muốn xóa hóa chất <strong>{{ deletingChemical.name }}</strong> không?
+        Backend sẽ không cho xóa nếu hóa chất đang được lô sản phẩm sử dụng.
+      </p>
+      <footer>
+        <button class="cancel-delete-button" type="button" (click)="deletingChemical = null">Hủy</button>
+        <button class="confirm-delete-button" type="button" (click)="confirmDelete()">Xóa</button>
+      </footer>
+    </section>
+  </div>
+}

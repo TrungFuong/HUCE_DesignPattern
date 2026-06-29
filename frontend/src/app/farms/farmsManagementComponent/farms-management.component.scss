@@ -92,7 +92,7 @@ th,
 td {
   border-bottom: 1px solid #dce8d8;
   padding: 14px 16px;
-  text-align: left;
+  text-align: center;
   vertical-align: middle;
 }
 
@@ -131,6 +131,7 @@ td span {
 .row-actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
 }
 

@@ -11,6 +11,7 @@ import { CreateUpdateShipmentsComponent } from '../createUpdateShipmentsComponen
 import { Shipment, ShipmentPayload } from '../shipment.model';
 import { ShipmentsService } from '../shipments.service';
 import { ViewDetailShipmentsComponent } from '../viewDetailShipmentsComponent/view-detail-shipments.component';
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-shipments-management',
@@ -24,6 +25,7 @@ export class ShipmentsManagementComponent implements OnInit {
   private readonly batchesService = inject(BatchesService);
   private readonly usersService = inject(UsersService);
   private readonly containersService = inject(ContainersService);
+  private readonly authService = inject(AuthService);
 
   currentPage = 1;
   readonly pageSize = 5;
@@ -46,6 +48,14 @@ export class ShipmentsManagementComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
 
+  get isReadOnly(): boolean {
+    return this.authService.getRole() === 3;
+  }
+
+  get isDistributor(): boolean {
+    return this.authService.getRole() === 3;
+  }
+
   readonly statusLabels: Record<number, string> = {
     0: 'Đã tạo',
     1: 'Đang vận chuyển',
@@ -55,9 +65,11 @@ export class ShipmentsManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadShipments();
-    this.loadBatches();
     this.loadUsers();
-    this.loadContainers();
+    if (!this.isReadOnly) {
+      this.loadBatches();
+      this.loadContainers();
+    }
   }
 
   get totalPages(): number {
@@ -90,7 +102,7 @@ export class ShipmentsManagementComponent implements OnInit {
     this.isLoading = true;
     this.shipmentsService.getShipments().subscribe({
       next: (shipments) => {
-        this.shipments = shipments;
+        this.shipments = this.filterShipmentsByCurrentRole(shipments);
         this.isLoading = false;
         this.currentPage = Math.min(this.currentPage, this.totalPages);
       },
@@ -150,18 +162,34 @@ export class ShipmentsManagementComponent implements OnInit {
   }
 
   openCreateForm(): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.editingShipment = null;
     this.isFormOpen = true;
   }
 
   openEditForm(shipment: Shipment): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.editingShipment = shipment;
     this.isFormOpen = true;
   }
 
   openDetail(shipment: Shipment): void {
+    if (!this.canViewShipment(shipment)) {
+      this.showToast('Bạn không có quyền xem shipment này.', 'error');
+      return;
+    }
+
     this.shipmentsService.getShipment(shipment.id).subscribe({
       next: (detail) => {
+        if (!this.canViewShipment(detail)) {
+          this.showToast('Bạn không có quyền xem shipment này.', 'error');
+          return;
+        }
+
         this.viewingShipment = detail;
       },
       error: (error: HttpErrorResponse) => {
@@ -171,6 +199,9 @@ export class ShipmentsManagementComponent implements OnInit {
   }
 
   openDeleteConfirm(shipment: Shipment): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.deletingShipment = shipment;
   }
 
@@ -180,6 +211,9 @@ export class ShipmentsManagementComponent implements OnInit {
   }
 
   saveShipment(value: ShipmentPayload): void {
+    if (this.isReadOnly) {
+      return;
+    }
     const isEdit = Boolean(this.editingShipment);
     const request$ = this.editingShipment
       ? this.shipmentsService.updateShipment(this.editingShipment.id, value)
@@ -198,7 +232,7 @@ export class ShipmentsManagementComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    if (!this.deletingShipment) {
+    if (this.isReadOnly || !this.deletingShipment) {
       return;
     }
 
@@ -225,6 +259,26 @@ export class ShipmentsManagementComponent implements OnInit {
     window.setTimeout(() => {
       this.toastMessage = '';
     }, 3000);
+  }
+
+  private filterShipmentsByCurrentRole(shipments: Shipment[]): Shipment[] {
+    const currentUser = this.authService.getCurrentUser();
+
+    if (!this.isDistributor || !currentUser) {
+      return shipments;
+    }
+
+    return shipments.filter((shipment) => shipment.to_actor_id === currentUser.id);
+  }
+
+  private canViewShipment(shipment: Shipment): boolean {
+    const currentUser = this.authService.getCurrentUser();
+
+    if (!this.isDistributor || !currentUser) {
+      return true;
+    }
+
+    return shipment.to_actor_id === currentUser.id;
   }
 
   private getErrorMessage(error: HttpErrorResponse): string {

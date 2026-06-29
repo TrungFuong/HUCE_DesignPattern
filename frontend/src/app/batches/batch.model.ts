@@ -10,6 +10,7 @@ export interface Batch {
   status: number;
   risk_level: number;
   qr_code_url: string | null;
+  chemicals?: BatchChemicalItem[];
 }
 
 export interface BatchPayload {
@@ -20,4 +21,9 @@ export interface BatchPayload {
   quantity: number;
   quantity_unit: string;
   grade: string | null;
+}
+
+export interface BatchChemicalItem {
+  chemical_id: string;
+  applied_at: string | null;
 }

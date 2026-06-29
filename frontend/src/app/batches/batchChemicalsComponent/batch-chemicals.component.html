@@ -1,0 +1,50 @@
+<div class="modal-backdrop" role="presentation">
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Cập nhật hóa chất cho lô">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Hóa chất của lô</p>
+        <h2>{{ batch.product_name }}</h2>
+        <span>{{ getSelectedCount() }} hóa chất đang được chọn</span>
+      </div>
+      <button class="icon-button" type="button" aria-label="Đóng form" (click)="cancel.emit()">×</button>
+    </header>
+
+    @if (isLoadingChemicals) {
+      <p class="empty-state">Đang tải danh sách hóa chất...</p>
+    } @else if (chemicalsError) {
+      <p class="field-error">{{ chemicalsError }}</p>
+    } @else if (!formItems.length) {
+      <p class="empty-state">Loại nông sản của lô này chưa có hóa chất phù hợp.</p>
+    } @else {
+      <form class="chemical-list" (ngSubmit)="submit()" #batchChemicalsForm="ngForm">
+        @for (item of formItems; track item.chemical.id) {
+          <label class="chemical-row">
+            <input
+              type="checkbox"
+              name="selected-{{ item.chemical.id }}"
+              [(ngModel)]="item.selected"
+            />
+            <span class="chemical-info">
+              <strong>{{ item.chemical.name }}</strong>
+              <small>{{ item.chemical.unit }} · {{ item.chemical.description || 'Không có mô tả' }}</small>
+            </span>
+            <span class="applied-date">
+              Ngày sử dụng
+              <input
+                type="datetime-local"
+                name="applied-{{ item.chemical.id }}"
+                [(ngModel)]="item.applied_at"
+                [disabled]="!item.selected"
+              />
+            </span>
+          </label>
+        }
+
+        <footer class="modal-actions">
+          <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
+          <button class="primary-button" type="submit">Cập nhật</button>
+        </footer>
+      </form>
+    }
+  </section>
+</div>

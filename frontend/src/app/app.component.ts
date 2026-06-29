@@ -2,8 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet } from '@angular/router';  // ← thêm Router
-import { AuthResponse, AuthService } from './auth.service';
+import { AuthMode, AuthResponse, AuthService } from './auth.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { defaultPathForRole } from './role.guard';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,7 @@ export class AppComponent implements OnInit {
   authMessage = '';
   authError = '';
   token = this.authService.getToken();
+  authMode: AuthMode = 'login';
 
   get isTracePage(): boolean {
     return this.router.url.includes('/traceability/') && this.router.url.includes('/public');
@@ -31,6 +33,11 @@ export class AppComponent implements OnInit {
       this.router.navigate(['/']);
     } else if (this.token) {
       this.authService.getMe().subscribe({
+        next: (user) => {
+          if (this.router.url === '/') {
+            void this.router.navigateByUrl(defaultPathForRole(user.role));
+          }
+        },
         error: () => {
           this.logout();
           this.router.navigate(['/']);
@@ -40,11 +47,37 @@ export class AppComponent implements OnInit {
   }
 
   showLoginPassword = false;
+  showRegisterPassword = false;
+
+  readonly publicRoleOptions = [
+    { value: 1, label: 'Nông dân' },
+    { value: 2, label: 'Thương lái' },
+    { value: 3, label: 'Nhà phân phối' },
+    { value: 4, label: 'Importer' },
+  ];
 
   readonly form = {
     email: '',
     password: '',
   };
+
+  readonly registerForm = {
+    full_name: '',
+    email: '',
+    password: '',
+    role: 1,
+  };
+
+  setAuthMode(mode: AuthMode): void {
+    if (this.authMode === mode) {
+      return;
+    }
+
+    this.authMode = mode;
+    this.authError = '';
+    this.authMessage = '';
+    this.isSubmitting = false;
+  }
 
   submitAuth(): void {
     this.authError = '';
@@ -62,6 +95,30 @@ export class AppComponent implements OnInit {
     });
   }
 
+  submitRegister(): void {
+    this.authError = '';
+    this.authMessage = '';
+    this.isSubmitting = true;
+
+    const email = this.registerForm.email.trim();
+    const password = this.registerForm.password;
+
+    this.authService.register({
+      full_name: this.registerForm.full_name.trim(),
+      email,
+      password,
+      role: Number(this.registerForm.role),
+    }).subscribe({
+      next: () => {
+        this.authService.login({ email, password }).subscribe({
+          next: (response) => this.handleAuthSuccess(response),
+          error: (error: HttpErrorResponse) => this.handleAuthError(error),
+        });
+      },
+      error: (error: HttpErrorResponse) => this.handleAuthError(error),
+    });
+  }
+
   logout(): void {
     this.authService.logout();
     this.token = null;
@@ -69,14 +126,31 @@ export class AppComponent implements OnInit {
   }
 
   private handleAuthSuccess(response: AuthResponse): void {
-    this.isSubmitting = false;
     this.token = response.access_token;
-    // this.authMessage = 'Đăng nhập thành công. Chào mừng bạn quay lại hệ thống.';
+    this.authService.getMe().subscribe({
+      next: (user) => {
+        this.isSubmitting = false;
+        void this.router.navigateByUrl(defaultPathForRole(user.role));
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.authService.logout();
+        this.token = null;
+        this.authError = 'Không thể tải thông tin tài khoản.';
+      },
+    });
   }
 
   private handleAuthError(error: HttpErrorResponse): void {
     this.isSubmitting = false;
     const detail = error.error?.detail;
+    const normalizedDetail = typeof detail === 'string' ? detail.toLowerCase() : '';
+
+    if (error.status === 401 || normalizedDetail.includes('invalid credential')) {
+      this.authError = 'Email hoặc mật khẩu không chính xác.';
+      return;
+    }
+
     this.authError =
       typeof detail === 'string'
         ? detail

@@ -10,7 +10,9 @@
       <p class="eyebrow">Danh mục lô sản phẩm</p>
       <h1>Quản lý lô sản phẩm</h1>
     </div>
-    <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    @if (!isReadOnly) {
+      <button class="create-button" type="button" (click)="openCreateForm()">Tạo mới</button>
+    }
   </header>
 
   <section class="table-panel">
@@ -30,7 +32,8 @@
               <th>Ngày thu hoạch</th>
               <th>Số lượng</th>
               <th>Phân loại</th>
-              <th>Thao tác</th>
+              <th class="info-column">Thông tin</th>
+              <th class="actions-column">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -45,12 +48,24 @@
                 <td>{{ batch.harvest_date | date: 'dd/MM/yyyy' }}</td>
                 <td>{{ batch.quantity }} {{ batch.quantity_unit }}</td>
                 <td>{{ batch.grade || 'Chưa cập nhật' }}</td>
-                <td>
-                  <div class="row-actions">
-                    <button class="qr-button" type="button" (click)="openQr(batch)">Show QR</button>
-                    <button class="view-button" type="button" (click)="openDetail(batch)">Xem chi tiết</button>
-                    <button class="edit-button" type="button" (click)="openEditForm(batch)">Sửa</button>
-                    <button class="delete-button" type="button" (click)="openDeleteConfirm(batch)">Xóa</button>
+                <td class="info-column">
+                  <div class="row-actions info-actions">
+                    <button class="qr-button" type="button" (click)="openQr(batch)">QR</button>
+                    <button class="view-button" type="button" (click)="openDetail(batch)">Chi tiết</button>
+                  </div>
+                </td>
+                <td class="actions-column">
+                  <div class="row-actions manage-actions">
+                    @if (canManageBatchChemicals) {
+                      <button class="chemical-button" type="button" (click)="openBatchChemicals(batch)">Hóa chất</button>
+                    }
+                    @if (!isReadOnly) {
+                      <button class="edit-button" type="button" (click)="openEditForm(batch)">Sửa</button>
+                      <button class="delete-button" type="button" (click)="openDeleteConfirm(batch)">Xóa</button>
+                    }
+                    @if (!hasActionPermission) {
+                      <span class="no-permission-badge">Không có quyền</span>
+                    }
                   </div>
                 </td>
               </tr>
@@ -103,6 +118,18 @@
     [qrImageUrl]="getQrImageUrl(qrBatch)"
     [publicTraceUrl]="getPublicTraceUrl(qrBatch)"
     (close)="qrBatch = null"
+  />
+}
+
+@if (chemicalBatch) {
+  <app-batch-chemicals
+    [batch]="chemicalBatch"
+    [chemicals]="chemicals"
+    [currentItems]="batchChemicals"
+    [isLoadingChemicals]="isLoadingChemicals"
+    [chemicalsError]="chemicalsError"
+    (cancel)="closeBatchChemicals()"
+    (save)="saveBatchChemicals($event)"
   />
 }
 

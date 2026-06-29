@@ -1,11 +1,16 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
+import { forkJoin } from 'rxjs';
+import { AuthService } from '../../auth.service';
+import { Chemical } from '../../chemicals/chemical.model';
+import { ChemicalsService } from '../../chemicals/chemicals.service';
 import { CropType } from '../../crop-types/crop-type.model';
 import { CropTypesService } from '../../crop-types/crop-types.service';
 import { Farm } from '../../farms/farm.model';
 import { FarmsService } from '../../farms/farms.service';
-import { Batch, BatchPayload } from '../batch.model';
+import { BatchChemicalsComponent } from '../batchChemicalsComponent/batch-chemicals.component';
+import { Batch, BatchChemicalItem, BatchPayload } from '../batch.model';
 import { BatchesService } from '../batches.service';
 import { CreateUpdateBatchesComponent } from '../createUpdateBatchesComponent/create-update-batches.component';
 import { ShowQrBatchesComponent } from '../showQrBatchesComponent/show-qr-batches.component';
@@ -14,7 +19,13 @@ import { ViewDetailBatchesComponent } from '../viewDetailBatchesComponent/view-d
 @Component({
   selector: 'app-batches-management',
   standalone: true,
-  imports: [DatePipe, CreateUpdateBatchesComponent, ViewDetailBatchesComponent, ShowQrBatchesComponent],
+  imports: [
+    DatePipe,
+    CreateUpdateBatchesComponent,
+    ViewDetailBatchesComponent,
+    ShowQrBatchesComponent,
+    BatchChemicalsComponent,
+  ],
   templateUrl: './batches-management.component.html',
   styleUrls: ['./batches-management.component.scss'],
 })
@@ -22,6 +33,8 @@ export class BatchesManagementComponent implements OnInit {
   private readonly batchesService = inject(BatchesService);
   private readonly farmsService = inject(FarmsService);
   private readonly cropTypesService = inject(CropTypesService);
+  private readonly authService = inject(AuthService);
+  private readonly chemicalsService = inject(ChemicalsService);
 
   currentPage = 1;
   readonly pageSize = 5;
@@ -37,10 +50,32 @@ export class BatchesManagementComponent implements OnInit {
   viewingBatch: Batch | null = null;
   deletingBatch: Batch | null = null;
   qrBatch: Batch | null = null;
+  chemicalBatch: Batch | null = null;
   isFormOpen = false;
   isLoading = false;
+  isLoadingChemicals = false;
+  chemicals: Chemical[] = [];
+  batchChemicals: BatchChemicalItem[] = [];
+  chemicalsError = '';
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
+
+  get isReadOnly(): boolean {
+    return !this.canWriteBatch;
+  }
+
+  get canWriteBatch(): boolean {
+    const role = this.authService.getRole();
+    return role === 0 || role === 1;
+  }
+
+  get canManageBatchChemicals(): boolean {
+    return this.authService.getRole() === 1;
+  }
+
+  get hasActionPermission(): boolean {
+    return this.canWriteBatch || this.canManageBatchChemicals;
+  }
 
   ngOnInit(): void {
     this.loadBatches();
@@ -128,11 +163,17 @@ export class BatchesManagementComponent implements OnInit {
   }
 
   openCreateForm(): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.editingBatch = null;
     this.isFormOpen = true;
   }
 
   openEditForm(batch: Batch): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.editingBatch = batch;
     this.isFormOpen = true;
   }
@@ -145,7 +186,44 @@ export class BatchesManagementComponent implements OnInit {
     this.qrBatch = batch;
   }
 
+  openBatchChemicals(batch: Batch): void {
+    if (!this.canManageBatchChemicals) {
+      return;
+    }
+
+    if (!batch.crop_type_id) {
+      this.showToast('Lô sản phẩm chưa có loại nông sản nên chưa thể gán hóa chất.', 'error');
+      return;
+    }
+
+    this.chemicalBatch = batch;
+    this.chemicals = [];
+    this.batchChemicals = [];
+    this.chemicalsError = '';
+    this.isLoadingChemicals = true;
+
+    forkJoin({
+      chemicals: this.chemicalsService.getChemicalsByCropType(batch.crop_type_id),
+      batchChemicals: this.batchesService.getBatchChemicals(batch.id),
+    }).subscribe({
+      next: ({ chemicals, batchChemicals }) => {
+        this.chemicals = chemicals;
+        this.batchChemicals = batchChemicals;
+        this.isLoadingChemicals = false;
+      },
+      error: () => {
+        this.chemicals = [];
+        this.batchChemicals = [];
+        this.chemicalsError = 'Không thể tải danh sách hóa chất theo loại nông sản.';
+        this.isLoadingChemicals = false;
+      },
+    });
+  }
+
   openDeleteConfirm(batch: Batch): void {
+    if (this.isReadOnly) {
+      return;
+    }
     this.deletingBatch = batch;
   }
 
@@ -154,7 +232,18 @@ export class BatchesManagementComponent implements OnInit {
     this.editingBatch = null;
   }
 
+  closeBatchChemicals(): void {
+    this.chemicalBatch = null;
+    this.chemicals = [];
+    this.batchChemicals = [];
+    this.chemicalsError = '';
+    this.isLoadingChemicals = false;
+  }
+
   saveBatch(value: BatchPayload): void {
+    if (this.isReadOnly) {
+      return;
+    }
     const isEdit = Boolean(this.editingBatch);
     const request$ = this.editingBatch
       ? this.batchesService.updateBatch(this.editingBatch.id, value)
@@ -163,7 +252,7 @@ export class BatchesManagementComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.closeForm();
-        this.showToast(isEdit ? 'Cập nhật lô sản phẩm thành công. QR đã được tạo mới.' : 'Tạo mới lô sản phẩm thành công. QR đã được tạo.');
+        this.showToast(isEdit ? 'Cập nhật lô sản phẩm thành công.' : 'Tạo mới lô sản phẩm thành công.');
         this.loadBatches();
       },
       error: (error: HttpErrorResponse) => {
@@ -173,7 +262,7 @@ export class BatchesManagementComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    if (!this.deletingBatch) {
+    if (this.isReadOnly || !this.deletingBatch) {
       return;
     }
 
@@ -183,6 +272,25 @@ export class BatchesManagementComponent implements OnInit {
         this.deletingBatch = null;
         this.showToast(`Đã xóa lô sản phẩm "${productName}".`);
         this.loadBatches();
+      },
+      error: () => {
+        this.showToast(
+          `Không thể xóa lô sản phẩm "${productName}" vì lô đã có hóa chất hoặc dữ liệu liên quan sử dụng.`,
+          'error',
+        );
+      },
+    });
+  }
+
+  saveBatchChemicals(items: BatchChemicalItem[]): void {
+    if (!this.canManageBatchChemicals || !this.chemicalBatch) {
+      return;
+    }
+
+    this.batchesService.setBatchChemicals(this.chemicalBatch.id, items).subscribe({
+      next: () => {
+        this.showToast('Cập nhật hóa chất cho lô thành công.');
+        this.closeBatchChemicals();
       },
       error: (error: HttpErrorResponse) => {
         this.showToast(this.getErrorMessage(error), 'error');
