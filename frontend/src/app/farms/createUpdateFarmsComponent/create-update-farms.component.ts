@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../auth.service';
 import { User } from '../../users/user.model';
 import { UsersService } from '../../users/users.service';
 import { Farm, FarmPayload } from '../farm.model';
@@ -14,6 +15,7 @@ import { Farm, FarmPayload } from '../farm.model';
 })
 export class CreateUpdateFarmsComponent implements OnChanges, OnInit {
   private readonly usersService = inject(UsersService);
+  private readonly authService = inject(AuthService);
 
   @Input() farm: Farm | null = null;
   @Output() cancel = new EventEmitter<void>();
@@ -26,6 +28,10 @@ export class CreateUpdateFarmsComponent implements OnChanges, OnInit {
 
   get title(): string {
     return this.farm ? 'Cập nhật thông tin nông trại' : 'Tạo mới nông trại';
+  }
+
+  get isFarmer(): boolean {
+    return this.authService.getRole() === 1;
   }
 
   ngOnInit(): void {
@@ -57,6 +63,17 @@ export class CreateUpdateFarmsComponent implements OnChanges, OnInit {
   private loadFarmers(): void {
     this.isLoadingFarmers = true;
     this.farmersError = '';
+
+    const currentUser = this.authService.getCurrentUser();
+    if (this.isFarmer && currentUser) {
+      this.farmers = [currentUser];
+      this.form = {
+        ...this.form,
+        owner_id: currentUser.id,
+      };
+      this.isLoadingFarmers = false;
+      return;
+    }
 
     this.usersService.getFarmers().subscribe({
       next: (farmers) => {

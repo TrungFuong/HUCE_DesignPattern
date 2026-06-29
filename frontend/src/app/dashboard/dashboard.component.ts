@@ -25,7 +25,6 @@ export class DashboardComponent {
     { path: '/shipments', icon: '⇄', label: 'Vận chuyển', exact: false, roles: [0, 2, 3] },
     { path: '/users', icon: '👤', label: 'Người dùng', exact: false, roles: [0] },
     { path: '/sensors', icon: '○', label: 'Cảm biến IoT', exact: false, roles: [0, 1] },
-    { path: '/reports', icon: '▤', label: 'Báo cáo', exact: false, roles: [0] },
   ];
 
   get menuItems() {

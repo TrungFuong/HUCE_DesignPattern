@@ -40,6 +40,7 @@ export class BatchesManagementComponent implements OnInit {
   readonly pageSize = 5;
 
   batches: Batch[] = [];
+  private allBatches: Batch[] = [];
   farms: Farm[] = [];
   cropTypes: CropType[] = [];
   farmsError = '';
@@ -69,6 +70,10 @@ export class BatchesManagementComponent implements OnInit {
     return role === 0 || role === 1;
   }
 
+  get isFarmer(): boolean {
+    return this.authService.getRole() === 1;
+  }
+
   get canManageBatchChemicals(): boolean {
     return this.authService.getRole() === 1;
   }
@@ -78,9 +83,11 @@ export class BatchesManagementComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadBatches();
-    this.loadFarms();
-    this.loadCropTypes();
+    this.authService.ensureCurrentUser().subscribe(() => {
+      this.loadFarms();
+      this.loadBatches();
+      this.loadCropTypes();
+    });
   }
 
   get totalPages(): number {
@@ -119,9 +126,9 @@ export class BatchesManagementComponent implements OnInit {
     this.isLoading = true;
     this.batchesService.getBatches().subscribe({
       next: (batches) => {
-        this.batches = batches;
+        this.allBatches = batches;
+        this.applyBatchFilter();
         this.isLoading = false;
-        this.currentPage = Math.min(this.currentPage, this.totalPages);
       },
       error: (error: HttpErrorResponse) => {
         this.isLoading = false;
@@ -135,7 +142,8 @@ export class BatchesManagementComponent implements OnInit {
     this.farmsError = '';
     this.farmsService.getFarms().subscribe({
       next: (farms) => {
-        this.farms = farms;
+        this.farms = this.filterFarmsByRole(farms);
+        this.applyBatchFilter();
         this.isLoadingFarms = false;
       },
       error: () => {
@@ -171,7 +179,7 @@ export class BatchesManagementComponent implements OnInit {
   }
 
   openEditForm(batch: Batch): void {
-    if (this.isReadOnly) {
+    if (this.isReadOnly || !this.canAccessBatch(batch)) {
       return;
     }
     this.editingBatch = batch;
@@ -179,15 +187,23 @@ export class BatchesManagementComponent implements OnInit {
   }
 
   openDetail(batch: Batch): void {
+    if (!this.canAccessBatch(batch)) {
+      return;
+    }
+
     this.viewingBatch = batch;
   }
 
   openQr(batch: Batch): void {
+    if (!this.canAccessBatch(batch)) {
+      return;
+    }
+
     this.qrBatch = batch;
   }
 
   openBatchChemicals(batch: Batch): void {
-    if (!this.canManageBatchChemicals) {
+    if (!this.canManageBatchChemicals || !this.canAccessBatch(batch)) {
       return;
     }
 
@@ -221,7 +237,7 @@ export class BatchesManagementComponent implements OnInit {
   }
 
   openDeleteConfirm(batch: Batch): void {
-    if (this.isReadOnly) {
+    if (this.isReadOnly || !this.canAccessBatch(batch)) {
       return;
     }
     this.deletingBatch = batch;
@@ -244,6 +260,12 @@ export class BatchesManagementComponent implements OnInit {
     if (this.isReadOnly) {
       return;
     }
+
+    if (this.isFarmer && !this.farms.some((farm) => farm.id === value.farm_id)) {
+      this.showToast('Bạn chỉ được tạo hoặc cập nhật lô sản phẩm thuộc nông trại của mình.', 'error');
+      return;
+    }
+
     const isEdit = Boolean(this.editingBatch);
     const request$ = this.editingBatch
       ? this.batchesService.updateBatch(this.editingBatch.id, value)
@@ -308,6 +330,37 @@ export class BatchesManagementComponent implements OnInit {
     window.setTimeout(() => {
       this.toastMessage = '';
     }, 3000);
+  }
+
+  private applyBatchFilter(): void {
+    this.batches = this.filterBatchesByRole(this.allBatches);
+    this.currentPage = Math.min(this.currentPage, this.totalPages);
+  }
+
+  private filterFarmsByRole(farms: Farm[]): Farm[] {
+    const currentUser = this.authService.getCurrentUser();
+    if (!this.isFarmer || !currentUser) {
+      return farms;
+    }
+
+    return farms.filter((farm) => farm.owner_id === currentUser.id);
+  }
+
+  private filterBatchesByRole(batches: Batch[]): Batch[] {
+    if (!this.isFarmer) {
+      return batches;
+    }
+
+    const ownedFarmIds = new Set(this.farms.map((farm) => farm.id));
+    return batches.filter((batch) => ownedFarmIds.has(batch.farm_id));
+  }
+
+  private canAccessBatch(batch: Batch): boolean {
+    if (!this.isFarmer) {
+      return true;
+    }
+
+    return this.farms.some((farm) => farm.id === batch.farm_id);
   }
 
   private getErrorMessage(error: HttpErrorResponse): string {

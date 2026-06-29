@@ -5,6 +5,7 @@ import { CreateUpdateFarmsComponent } from '../createUpdateFarmsComponent/create
 import { Farm, FarmPayload } from '../farm.model';
 import { FarmsService } from '../farms.service';
 import { ViewDetailFarmsComponent } from '../viewDetailFarmsComponent/view-detail-farms.component';
+import { AuthService } from '../../auth.service';
 import { User } from '../../users/user.model';
 import { UsersService } from '../../users/users.service';
 
@@ -18,6 +19,7 @@ import { UsersService } from '../../users/users.service';
 export class FarmsManagementComponent implements OnInit {
   private readonly farmsService = inject(FarmsService);
   private readonly usersService = inject(UsersService);
+  private readonly authService = inject(AuthService);
 
   currentPage = 1;
   readonly pageSize = 10;
@@ -34,8 +36,10 @@ export class FarmsManagementComponent implements OnInit {
   toastType: 'success' | 'error' = 'success';
 
   ngOnInit(): void {
-    this.loadFarms();
-    this.loadFarmers();
+    this.authService.ensureCurrentUser().subscribe(() => {
+      this.loadFarms();
+      this.loadFarmers();
+    });
   }
 
   get totalPages(): number {
@@ -55,11 +59,15 @@ export class FarmsManagementComponent implements OnInit {
     return this.farmers.find((farmer) => farmer.id === ownerId)?.full_name ?? ownerId;
   }
 
+  get isFarmer(): boolean {
+    return this.authService.getRole() === 1;
+  }
+
   loadFarms(): void {
     this.isLoading = true;
     this.farmsService.getFarms().subscribe({
       next: (farms) => {
-        this.farms = farms;
+        this.farms = this.filterFarmsByRole(farms);
         this.isLoading = false;
         this.currentPage = Math.min(this.currentPage, this.totalPages);
       },
@@ -71,6 +79,12 @@ export class FarmsManagementComponent implements OnInit {
   }
 
   loadFarmers(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (this.isFarmer && currentUser) {
+      this.farmers = [currentUser];
+      return;
+    }
+
     this.usersService.getFarmers().subscribe({
       next: (farmers) => {
         this.farmers = farmers;
@@ -87,15 +101,30 @@ export class FarmsManagementComponent implements OnInit {
   }
 
   openEditForm(farm: Farm): void {
+    if (!this.canAccessFarm(farm)) {
+      this.showToast('Bạn chỉ được thao tác với nông trại thuộc về mình.', 'error');
+      return;
+    }
+
     this.editingFarm = farm;
     this.isFormOpen = true;
   }
 
   openDetail(farm: Farm): void {
+    if (!this.canAccessFarm(farm)) {
+      this.showToast('Bạn chỉ được xem nông trại thuộc về mình.', 'error');
+      return;
+    }
+
     this.viewingFarm = farm;
   }
 
   openDeleteConfirm(farm: Farm): void {
+    if (!this.canAccessFarm(farm)) {
+      this.showToast('Bạn chỉ được xóa nông trại thuộc về mình.', 'error');
+      return;
+    }
+
     this.deletingFarm = farm;
   }
 
@@ -107,9 +136,11 @@ export class FarmsManagementComponent implements OnInit {
   saveFarm(value: FarmPayload): void {
     this.isSaving = true;
     const isEdit = Boolean(this.editingFarm);
+    const currentUser = this.authService.getCurrentUser();
+    const payload = this.isFarmer && currentUser ? { ...value, owner_id: currentUser.id } : value;
     const request$ = this.editingFarm
-      ? this.farmsService.updateFarm(this.editingFarm.id, value)
-      : this.farmsService.createFarm(value);
+      ? this.farmsService.updateFarm(this.editingFarm.id, payload)
+      : this.farmsService.createFarm(payload);
 
     request$.subscribe({
       next: () => {
@@ -153,6 +184,20 @@ export class FarmsManagementComponent implements OnInit {
     window.setTimeout(() => {
       this.toastMessage = '';
     }, 3000);
+  }
+
+  private filterFarmsByRole(farms: Farm[]): Farm[] {
+    const currentUser = this.authService.getCurrentUser();
+    if (!this.isFarmer || !currentUser) {
+      return farms;
+    }
+
+    return farms.filter((farm) => farm.owner_id === currentUser.id);
+  }
+
+  private canAccessFarm(farm: Farm): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return !this.isFarmer || farm.owner_id === currentUser?.id;
   }
 
   private getErrorMessage(error: HttpErrorResponse): string {

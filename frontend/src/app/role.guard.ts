@@ -10,6 +10,9 @@ export const defaultPathForRole = (role: number | null): string => {
   if (role === 3) {
     return '/shipments';
   }
+  if (role === 4) {
+    return '/profile';
+  }
   return '/';
 };
 

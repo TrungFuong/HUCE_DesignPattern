@@ -53,7 +53,7 @@ export class AppComponent implements OnInit {
     { value: 1, label: 'Nông dân' },
     { value: 2, label: 'Thương lái' },
     { value: 3, label: 'Nhà phân phối' },
-    { value: 4, label: 'Importer' },
+    { value: 4, label: 'Người tiêu dùng' },
   ];
 
   readonly form = {
@@ -100,20 +100,20 @@ export class AppComponent implements OnInit {
     this.authMessage = '';
     this.isSubmitting = true;
 
-    const email = this.registerForm.email.trim();
-    const password = this.registerForm.password;
-
     this.authService.register({
       full_name: this.registerForm.full_name.trim(),
-      email,
-      password,
+      email: this.registerForm.email.trim(),
+      password: this.registerForm.password,
       role: Number(this.registerForm.role),
     }).subscribe({
       next: () => {
-        this.authService.login({ email, password }).subscribe({
-          next: (response) => this.handleAuthSuccess(response),
-          error: (error: HttpErrorResponse) => this.handleAuthError(error),
-        });
+        this.isSubmitting = false;
+        this.authMessage = 'Đăng ký thành công. Vui lòng đăng nhập để tiếp tục.';
+        this.authMode = 'login';
+        this.registerForm.full_name = '';
+        this.registerForm.email = '';
+        this.registerForm.password = '';
+        this.registerForm.role = 1;
       },
       error: (error: HttpErrorResponse) => this.handleAuthError(error),
     });

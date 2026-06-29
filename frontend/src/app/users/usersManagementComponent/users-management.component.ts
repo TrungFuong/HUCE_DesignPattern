@@ -34,6 +34,7 @@ export class UsersManagementComponent implements OnInit {
     { value: 2, label: 'Thương lái' },
     { value: 3, label: 'Nhà phân phối' },
     { value: 0, label: 'Admin' },
+    { value: 4, label: 'Người tiêu dùng' },
   ];
 
   form = {
@@ -64,7 +65,7 @@ export class UsersManagementComponent implements OnInit {
 
   getRoleLabel(roleValue: number): string {
     const r = this.roles.find(x => x.value === roleValue);
-    return r ? r.label : 'Unknown';
+    return r ? r.label : 'Người tiêu dùng';
   }
 
   openCreateForm(): void {

@@ -11,7 +11,7 @@
     <form class="farm-form" (ngSubmit)="submit()" #farmForm="ngForm">
       <label>
         Chủ nông trại
-        <select name="owner_id" [(ngModel)]="form.owner_id" [disabled]="isLoadingFarmers" required>
+        <select name="owner_id" [(ngModel)]="form.owner_id" [disabled]="isLoadingFarmers || isFarmer" required>
           <option value="" disabled>
             {{ isLoadingFarmers ? 'Đang tải danh sách nông dân...' : 'Chọn nông dân' }}
           </option>
