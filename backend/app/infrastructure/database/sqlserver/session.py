@@ -13,6 +13,8 @@ from app.infrastructure.database.sqlserver.models import farm_model  # noqa: F40
 from app.infrastructure.database.sqlserver.models import risk_rule_model  # noqa: F401
 from app.infrastructure.database.sqlserver.models import shipment_model  # noqa: F401
 from app.infrastructure.database.sqlserver.models import user_model  # noqa: F401
+from app.infrastructure.database.sqlserver.models import chemical_model  # noqa: F401
+from app.infrastructure.database.sqlserver.models import batch_chemical_model  # noqa: F401
 
 
 engine = create_async_engine(settings.sqlserver_url, future=True, echo=False)

@@ -4,9 +4,11 @@ import { AuthService } from './auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const token = inject(AuthService).getToken();
+
   if (!token || !request.url.startsWith('http://localhost:8000')) {
     return next(request);
   }
+
   return next(
     request.clone({
       setHeaders: {

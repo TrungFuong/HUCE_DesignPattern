@@ -1,0 +1,183 @@
+:host {
+  display: block;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(12, 30, 18, 0.42);
+}
+
+.modal {
+  width: min(760px, 100%);
+  max-height: min(780px, calc(100vh - 48px));
+  overflow: auto;
+  border-radius: 8px;
+  padding: 24px;
+  background: #ffffff;
+  box-shadow: 0 26px 80px rgba(12, 30, 18, 0.24);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.modal-header h2,
+.modal-header p {
+  margin: 0;
+}
+
+.modal-header span {
+  display: block;
+  margin-top: 8px;
+  color: #4c6253;
+  font-weight: 800;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #376044;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.icon-button,
+.secondary-button,
+.primary-button {
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+  color: #24472e;
+  background: #dbe8d5;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.chemical-list {
+  display: grid;
+  gap: 12px;
+}
+
+.chemical-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(180px, 230px);
+  gap: 14px;
+  align-items: center;
+  border: 1px solid #dce8d8;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fbfdf9;
+}
+
+.chemical-row > input {
+  width: 18px;
+  height: 18px;
+  accent-color: #2f6f3e;
+}
+
+.chemical-info {
+  display: grid;
+  gap: 4px;
+}
+
+.chemical-info strong {
+  color: #17261d;
+}
+
+.chemical-info small,
+.applied-date {
+  color: #4c6253;
+  font-weight: 700;
+}
+
+.applied-date {
+  display: grid;
+  gap: 6px;
+}
+
+.applied-date input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #c9d8c4;
+  border-radius: 8px;
+  padding: 10px;
+  color: #17261d;
+  background: #ffffff;
+}
+
+.applied-date input:disabled {
+  opacity: 0.6;
+  background: #eef4eb;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.secondary-button,
+.primary-button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.secondary-button {
+  color: #24472e;
+  background: #dbe8d5;
+}
+
+.primary-button {
+  color: #ffffff;
+  background: #2f6f3e;
+}
+
+.empty-state,
+.field-error {
+  margin: 0;
+  padding: 18px;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.empty-state {
+  color: #4c6253;
+  background: #f0f6ed;
+}
+
+.field-error {
+  color: #8a2727;
+  background: #fde8e8;
+}
+
+@media (max-width: 720px) {
+  .chemical-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .applied-date {
+    grid-column: 2 / -1;
+  }
+}

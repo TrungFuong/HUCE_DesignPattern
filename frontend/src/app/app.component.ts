@@ -1,7 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+<<<<<<< HEAD
 import { Router, RouterOutlet } from '@angular/router';
+=======
+import { Router, RouterOutlet } from '@angular/router';  // ← thêm Router
+>>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
 import { AuthMode, AuthResponse, AuthService } from './auth.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { defaultPathForRole } from './role.guard';
@@ -29,11 +33,28 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+<<<<<<< HEAD
     if (!this.token) {
       if (!this.isTracePage) {
         void this.router.navigateByUrl('/');
       }
       return;
+=======
+    if (!this.token && !this.isTracePage) {
+      this.router.navigate(['/']);
+    } else if (this.token) {
+      this.authService.getMe().subscribe({
+        next: (user) => {
+          if (this.router.url === '/') {
+            void this.router.navigateByUrl(defaultPathForRole(user.role));
+          }
+        },
+        error: () => {
+          this.logout();
+          this.router.navigate(['/']);
+        }
+      });
+>>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
     }
 
     this.authService.ensureCurrentUser().subscribe((user) => {
@@ -50,6 +71,14 @@ export class AppComponent implements OnInit {
   }
 
   showLoginPassword = false;
+  showRegisterPassword = false;
+
+  readonly publicRoleOptions = [
+    { value: 1, label: 'Nông dân' },
+    { value: 2, label: 'Thương lái' },
+    { value: 3, label: 'Nhà phân phối' },
+    { value: 4, label: 'Người tiêu dùng' },
+  ];
 
   readonly form = {
     full_name: '',
@@ -58,10 +87,29 @@ export class AppComponent implements OnInit {
     role: 1,
   };
 
+<<<<<<< HEAD
   setAuthMode(mode: AuthMode): void {
     this.authMode = mode;
     this.authError = '';
     this.authMessage = '';
+=======
+  readonly registerForm = {
+    full_name: '',
+    email: '',
+    password: '',
+    role: 1,
+  };
+
+  setAuthMode(mode: AuthMode): void {
+    if (this.authMode === mode) {
+      return;
+    }
+
+    this.authMode = mode;
+    this.authError = '';
+    this.authMessage = '';
+    this.isSubmitting = false;
+>>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
   }
 
   submitAuth(): void {
@@ -83,6 +131,30 @@ export class AppComponent implements OnInit {
 
     request$.subscribe({
       next: (response) => this.handleAuthSuccess(response),
+      error: (error: HttpErrorResponse) => this.handleAuthError(error),
+    });
+  }
+
+  submitRegister(): void {
+    this.authError = '';
+    this.authMessage = '';
+    this.isSubmitting = true;
+
+    this.authService.register({
+      full_name: this.registerForm.full_name.trim(),
+      email: this.registerForm.email.trim(),
+      password: this.registerForm.password,
+      role: Number(this.registerForm.role),
+    }).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.authMessage = 'Đăng ký thành công. Vui lòng đăng nhập để tiếp tục.';
+        this.authMode = 'login';
+        this.registerForm.full_name = '';
+        this.registerForm.email = '';
+        this.registerForm.password = '';
+        this.registerForm.role = 1;
+      },
       error: (error: HttpErrorResponse) => this.handleAuthError(error),
     });
   }
@@ -113,6 +185,13 @@ export class AppComponent implements OnInit {
   private handleAuthError(error: HttpErrorResponse): void {
     this.isSubmitting = false;
     const detail = error.error?.detail;
+    const normalizedDetail = typeof detail === 'string' ? detail.toLowerCase() : '';
+
+    if (error.status === 401 || normalizedDetail.includes('invalid credential')) {
+      this.authError = 'Email hoặc mật khẩu không chính xác.';
+      return;
+    }
+
     this.authError =
       typeof detail === 'string'
         ? detail

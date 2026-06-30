@@ -26,6 +26,20 @@ select {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes authFormEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    filter: blur(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
 .hero-panel {
   overflow: hidden;
   min-height: calc(100vh - 96px);
@@ -217,6 +231,7 @@ h1 {
   backdrop-filter: blur(24px);
   padding: 40px;
   box-shadow: 0 32px 80px rgba(12, 30, 18, 0.15), inset 0 0 0 1px rgba(255,255,255,0.4);
+  transition: box-shadow 0.28s ease;
 }
 
 .auth-header {
@@ -232,42 +247,72 @@ h1 {
 }
 
 .mode-toggle {
-  width: 100%;
+  gap: 6px;
+  width: fit-content;
   padding: 4px;
-  box-sizing: border-box;
-  gap: 4px;
-  border: 1px solid rgba(47, 111, 62, 0.14);
-  border-radius: 12px;
-  background: rgba(223, 235, 223, 0.75);
+  border: 1px solid rgba(47, 111, 62, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .mode-toggle button {
-  flex: 1;
-  min-height: 38px;
-  padding: 8px 12px;
   border: 0;
-  border-radius: 9px;
-  color: #55705d;
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: #31533b;
   background: transparent;
   cursor: pointer;
-  font-size: 0.9rem;
   font-weight: 800;
-  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .mode-toggle button:hover {
-  color: #235d32;
+  transform: translateY(-1px);
+  background: rgba(47, 111, 62, 0.08);
 }
 
 .mode-toggle button.active {
   color: #ffffff;
   background: linear-gradient(135deg, #378248 0%, #255f34 100%);
-  box-shadow: 0 4px 12px rgba(37, 95, 52, 0.22);
+  box-shadow: 0 6px 16px rgba(37, 95, 52, 0.22);
+}
+
+.auth-form-stage {
+  position: relative;
+  display: grid;
+  min-height: 480px;
 }
 
 .auth-form {
+  position: absolute;
+  inset: 0 0 auto;
   display: grid;
+  align-content: start;
   gap: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(22px) scale(0.985);
+  filter: blur(4px);
+  transition:
+    opacity 0.28s ease,
+    transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.28s ease;
+  will-change: opacity, transform, filter;
+}
+
+.auth-form.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0) scale(1);
+  filter: blur(0);
+}
+
+.auth-form-register {
+  transform: translateX(-22px) scale(0.985);
+}
+
+.auth-form-register.active {
+  transform: translateX(0) scale(1);
 }
 
 .auth-form label {

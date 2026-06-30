@@ -1,8 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
+import { AuthService } from '../../auth.service';
+import { CreateUpdateCropTypesComponent } from '../createUpdateCropTypesComponent/create-update-crop-types.component';
 import { CropType, CropTypePayload } from '../crop-type.model';
 import { CropTypesService } from '../crop-types.service';
-import { CreateUpdateCropTypesComponent } from '../createUpdateCropTypesComponent/create-update-crop-types.component';
 import { ViewDetailCropTypesComponent } from '../viewDetailCropTypesComponent/view-detail-crop-types.component';
 import { AuthService } from '../../auth.service';
 
@@ -31,7 +32,12 @@ export class CropTypesManagementComponent implements OnInit {
   toastType: 'success' | 'error' = 'success';
 
   get isReadOnly(): boolean {
+<<<<<<< HEAD
     return this.authService.getRole() !== 0;
+=======
+    const role = this.authService.getRole();
+    return role !== 0 && role !== 1;
+>>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
   }
 
   ngOnInit(): void {
@@ -99,10 +105,16 @@ export class CropTypesManagementComponent implements OnInit {
   }
 
   saveCropType(value: CropTypePayload): void {
+<<<<<<< HEAD
     if (this.isReadOnly || this.isSaving) {
       return;
     }
     this.isSaving = true;
+=======
+    if (this.isReadOnly) {
+      return;
+    }
+>>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
     const isEdit = Boolean(this.editingCropType);
     const request$ = this.editingCropType
       ? this.cropTypesService.updateCropType(this.editingCropType.id, value)
@@ -134,8 +146,11 @@ export class CropTypesManagementComponent implements OnInit {
         this.showToast(`Đã xóa loại nông sản "${cropTypeName}".`);
         this.loadCropTypes();
       },
-      error: (error: HttpErrorResponse) => {
-        this.showToast(this.getErrorMessage(error), 'error');
+      error: () => {
+        this.showToast(
+          `Không thể xóa loại nông sản "${cropTypeName}" vì đang có hóa chất hoặc dữ liệu liên quan sử dụng.`,
+          'error',
+        );
       },
     });
   }

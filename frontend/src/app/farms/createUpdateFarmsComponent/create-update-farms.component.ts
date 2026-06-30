@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../auth.service';
 import { User } from '../../users/user.model';
 import { Farm, FarmPayload } from '../farm.model';
 
@@ -10,7 +11,10 @@ import { Farm, FarmPayload } from '../farm.model';
   templateUrl: './create-update-farms.component.html',
   styleUrls: ['./create-update-farms.component.scss'],
 })
-export class CreateUpdateFarmsComponent implements OnChanges {
+export class CreateUpdateFarmsComponent implements OnChanges, OnInit {
+  private readonly usersService = inject(UsersService);
+  private readonly authService = inject(AuthService);
+
   @Input() farm: Farm | null = null;
   @Input() farmers: User[] = [];
   @Input() ownerLocked = false;
@@ -24,6 +28,14 @@ export class CreateUpdateFarmsComponent implements OnChanges {
 
   get title(): string {
     return this.farm ? 'Cập nhật thông tin nông trại' : 'Tạo mới nông trại';
+  }
+
+  get isFarmer(): boolean {
+    return this.authService.getRole() === 1;
+  }
+
+  ngOnInit(): void {
+    this.loadFarmers();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -51,6 +63,37 @@ export class CreateUpdateFarmsComponent implements OnChanges {
       ...this.form,
       planting_date: this.form.planting_date || null,
       harvest_date: this.form.harvest_date || null,
+    });
+  }
+
+  private loadFarmers(): void {
+    this.isLoadingFarmers = true;
+    this.farmersError = '';
+
+    const currentUser = this.authService.getCurrentUser();
+    if (this.isFarmer && currentUser) {
+      this.farmers = [currentUser];
+      this.form = {
+        ...this.form,
+        owner_id: currentUser.id,
+      };
+      this.isLoadingFarmers = false;
+      return;
+    }
+
+    this.usersService.getFarmers().subscribe({
+      next: (farmers) => {
+        this.farmers = farmers.filter((farmer) => farmer.is_active);
+        this.isLoadingFarmers = false;
+      },
+      error: (error: HttpErrorResponse) => {
+        const detail = error.error?.detail;
+        this.farmersError =
+          typeof detail === 'string'
+            ? detail
+            : 'Không thể tải danh sách nông dân từ hệ thống.';
+        this.isLoadingFarmers = false;
+      },
     });
   }
 

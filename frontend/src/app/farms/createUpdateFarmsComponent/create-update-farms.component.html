@@ -1,11 +1,23 @@
 <div class="modal-backdrop" role="presentation">
-  <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
+  <section
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="title"
+  >
     <header class="modal-header">
       <div>
         <p class="eyebrow">Quản lý nông trại</p>
         <h2>{{ title }}</h2>
       </div>
-      <button class="icon-button" type="button" aria-label="Đóng form" (click)="cancel.emit()">×</button>
+      <button
+        class="icon-button"
+        type="button"
+        aria-label="Đóng form"
+        (click)="cancel.emit()"
+      >
+        ×
+      </button>
     </header>
 
     <form class="farm-form" (ngSubmit)="submit()" #farmForm="ngForm">
@@ -14,11 +26,15 @@
         <select
           name="owner_id"
           [(ngModel)]="form.owner_id"
-          [disabled]="isLoadingFarmers || ownerLocked"
+          [disabled]="isLoadingFarmers || isFarmer"
           required
         >
           <option value="" disabled>
-            {{ isLoadingFarmers ? 'Đang tải danh sách nông dân...' : 'Chọn nông dân' }}
+            {{
+              isLoadingFarmers
+                ? "Đang tải danh sách nông dân..."
+                : "Chọn nông dân"
+            }}
           </option>
           @for (farmer of farmers; track farmer.id) {
             <option [value]="farmer.id">{{ farmer.full_name }}</option>
@@ -28,7 +44,9 @@
           <span class="field-error">{{ farmersError }}</span>
         }
         @if (!isLoadingFarmers && !farmers.length && !farmersError) {
-          <span class="field-error">Chưa có người dùng nào có vai trò nông dân.</span>
+          <span class="field-error"
+            >Chưa có người dùng nào có vai trò nông dân.</span
+          >
         }
       </label>
 
@@ -44,18 +62,32 @@
 
       <label>
         Ngày gieo trồng
-        <input name="planting_date" type="date" [(ngModel)]="form.planting_date" />
+        <input
+          name="planting_date"
+          type="date"
+          [(ngModel)]="form.planting_date"
+        />
       </label>
 
       <label>
         Ngày thu hoạch
-        <input name="harvest_date" type="date" [(ngModel)]="form.harvest_date" />
+        <input
+          name="harvest_date"
+          type="date"
+          [(ngModel)]="form.harvest_date"
+        />
       </label>
 
       <footer class="modal-actions full-span">
-        <button class="secondary-button" type="button" (click)="cancel.emit()">Hủy</button>
-        <button class="primary-button" type="submit" [disabled]="farmForm.invalid || isSaving">
-          {{ isSaving ? 'Đang lưu...' : (farm ? 'Cập nhật' : 'Tạo mới') }}
+        <button class="secondary-button" type="button" (click)="cancel.emit()">
+          Hủy
+        </button>
+        <button
+          class="primary-button"
+          type="submit"
+          [disabled]="farmForm.invalid || isSaving"
+        >
+          {{ isSaving ? "Đang lưu..." : farm ? "Cập nhật" : "Tạo mới" }}
         </button>
       </footer>
     </form>

@@ -14,6 +14,7 @@
         </div>
       </nav>
 
+<<<<<<< HEAD
       <div class="hero-grid">
         <section class="intro">
           <p class="eyebrow">Truy xuất nguồn gốc chủ động</p>
@@ -29,8 +30,24 @@
             <span>Cảm biến IoT</span>
             <span>Blockchain hash</span>
             <span>QR công khai</span>
+=======
+      <section class="auth-panel" aria-label="Bảng xác thực">
+        <div class="auth-header">
+          <div>
+            <p class="eyebrow">Tài khoản hệ thống</p>
+            <h2>{{ authMode === 'login' ? 'Đăng nhập' : 'Đăng ký' }}</h2>
+          </div>
+          <div class="mode-toggle" aria-label="Chọn chế độ xác thực">
+            <button type="button" [class.active]="authMode === 'login'" (click)="setAuthMode('login')">
+              Đăng nhập
+            </button>
+            <button type="button" [class.active]="authMode === 'register'" (click)="setAuthMode('register')">
+              Đăng ký
+            </button>
+>>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
           </div>
 
+<<<<<<< HEAD
           <div class="metric-grid">
             <article>
               <strong>SQL Server</strong>
@@ -70,6 +87,113 @@
                 <input name="full_name" type="text" [(ngModel)]="form.full_name" required />
               </label>
             }
+=======
+        <div class="auth-form-stage" [class.register-mode]="authMode === 'register'">
+          <form
+            class="auth-form auth-form-login"
+            [class.active]="authMode === 'login'"
+            [attr.aria-hidden]="authMode !== 'login'"
+            (ngSubmit)="submitAuth()"
+            #authForm="ngForm"
+          >
+            <label>
+              Email
+              <input name="email" type="email" [(ngModel)]="form.email" placeholder="farmer@ocop.vn" required email />
+            </label>
+
+            <label>
+              <span>Mật khẩu <span class="required">*</span></span>
+              <div class="password-input-wrapper">
+                <input
+                  name="password"
+                  [type]="showLoginPassword ? 'text' : 'password'"
+                  [(ngModel)]="form.password"
+                  required
+                  autocomplete="current-password"
+                />
+                <button
+                  type="button"
+                  class="toggle-password-btn"
+                  (click)="showLoginPassword = !showLoginPassword"
+                  tabindex="-1"
+                >
+                  {{ showLoginPassword ? '👁️' : '👁️‍🗨️' }}
+                </button>
+              </div>
+            </label>
+
+            <button class="primary-action" type="submit" [disabled]="authForm.invalid || isSubmitting">
+              {{ isSubmitting ? 'Đang xử lý...' : 'Đăng nhập' }}
+            </button>
+          </form>
+
+          <form
+            class="auth-form auth-form-register"
+            [class.active]="authMode === 'register'"
+            [attr.aria-hidden]="authMode !== 'register'"
+            (ngSubmit)="submitRegister()"
+            #registerNgForm="ngForm"
+          >
+            <label>
+              Họ và tên
+              <input
+                name="registerFullName"
+                type="text"
+                [(ngModel)]="registerForm.full_name"
+                placeholder="Nguyễn Văn A"
+                required
+              />
+            </label>
+
+            <label>
+              Email
+              <input
+                name="registerEmail"
+                type="email"
+                [(ngModel)]="registerForm.email"
+                placeholder="user@ocop.vn"
+                required
+                email
+              />
+            </label>
+
+            <label>
+              <span>Mật khẩu <span class="required">*</span></span>
+              <div class="password-input-wrapper">
+                <input
+                  name="registerPassword"
+                  [type]="showRegisterPassword ? 'text' : 'password'"
+                  [(ngModel)]="registerForm.password"
+                  required
+                  minlength="6"
+                  autocomplete="new-password"
+                />
+                <button
+                  type="button"
+                  class="toggle-password-btn"
+                  (click)="showRegisterPassword = !showRegisterPassword"
+                  tabindex="-1"
+                >
+                  {{ showRegisterPassword ? '👁️' : '👁️‍🗨️' }}
+                </button>
+              </div>
+            </label>
+
+            <label>
+              Vai trò
+              <select name="registerRole" [(ngModel)]="registerForm.role" required>
+                @for (role of publicRoleOptions; track role.value) {
+                <option [ngValue]="role.value">{{ role.label }}</option>
+                }
+              </select>
+            </label>
+
+            <button class="primary-action" type="submit" [disabled]="registerNgForm.invalid || isSubmitting">
+              {{ isSubmitting ? 'Đang xử lý...' : 'Đăng ký' }}
+            </button>
+          </form>
+        </div>
+>>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
 
             <label>
               Email
@@ -135,7 +259,13 @@
     </section>
   </main>
 } @else {
+<<<<<<< HEAD
   <app-dashboard [authMessage]="authMessage" (logoutRequested)="logout()">
     <router-outlet />
   </app-dashboard>
+=======
+<app-dashboard [authMessage]="authMessage" (logoutRequested)="logout()">
+  <router-outlet />
+</app-dashboard>
+>>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
 }

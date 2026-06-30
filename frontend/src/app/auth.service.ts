@@ -37,9 +37,7 @@ export class AuthService {
   }
 
   register(payload: RegisterRequest): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.apiBaseUrl}/auth/register`, payload)
-      .pipe(tap((response) => this.persistToken(response)));
+    return this.http.post<AuthResponse>(`${this.apiBaseUrl}/auth/register`, payload);
   }
 
   getToken(): string | null {
@@ -47,7 +45,9 @@ export class AuthService {
   }
 
   getMe(): Observable<User> {
-    return this.http.get<User>(`${this.apiBaseUrl}/auth/me`).pipe(
+    const token = this.getToken();
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get<User>(`${this.apiBaseUrl}/auth/me`, { headers }).pipe(
       tap((user) => this.currentUserSubject.next(user)),
     );
   }

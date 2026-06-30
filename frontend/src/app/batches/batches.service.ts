@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Batch, BatchPayload } from './batch.model';
+import { Batch, BatchChemicalItem, BatchPayload } from './batch.model';
 
 @Injectable({ providedIn: 'root' })
 export class BatchesService {
@@ -23,6 +23,14 @@ export class BatchesService {
 
   deleteBatch(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiBaseUrl}/batches/${id}`);
+  }
+
+  getBatchChemicals(id: string): Observable<BatchChemicalItem[]> {
+    return this.http.get<BatchChemicalItem[]>(`${this.apiBaseUrl}/batches/${id}/chemicals`);
+  }
+
+  setBatchChemicals(id: string, payload: BatchChemicalItem[]): Observable<BatchChemicalItem[]> {
+    return this.http.put<BatchChemicalItem[]>(`${this.apiBaseUrl}/batches/${id}/chemicals`, payload);
   }
 
   getQrImageUrl(id: string): string {

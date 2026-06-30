@@ -106,6 +106,25 @@ def require_roles(*allowed_roles: RoleName | int) -> Callable:
     return role_checker
 
 
+def require_roles(*allowed_roles: int):
+    """Factory tạo dependency kiểm tra role.
+
+    Usage:
+        current_user: dict = Depends(require_roles(RoleName.ADMIN, RoleName.FARMER))
+    """
+    async def _check_role(
+        current_user: dict = Depends(get_current_user),
+    ) -> dict:
+        user_role = current_user.get("role")
+        if user_role is None or int(user_role) not in [int(r) for r in allowed_roles]:
+            raise HTTPException(
+                status_code=403,
+                detail="Bạn không có quyền thực hiện thao tác này",
+            )
+        return current_user
+    return _check_role
+
+
 @lru_cache()
 def get_hash_service() -> Sha256HashService:
     return Sha256HashService()
