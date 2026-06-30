@@ -20,7 +20,7 @@ export class DashboardComponent {
     { path: '/crop-types', icon: '◇', label: 'Loại nông sản', exact: false, roles: [0, 1] },
     { path: '/chemicals', icon: '⌬', label: 'Hóa chất', exact: false, roles: [0, 1] },
     { path: '/batches', icon: '◫', label: 'Lô sản phẩm', exact: false, roles: [0, 1, 2, 3] },
-    { path: '/risk-rules', icon: '!', label: 'Risk rule', exact: false, roles: [0, 1] },
+    { path: '/risk-rules', icon: '!', label: 'Mức độ rủi ro', exact: false, roles: [0, 1] },
     { path: '/containers', icon: '▣', label: 'Container', exact: false, roles: [0, 2] },
     { path: '/shipments', icon: '⇄', label: 'Vận chuyển', exact: false, roles: [0, 2, 3] },
     { path: '/users', icon: '👤', label: 'Người dùng', exact: false, roles: [0] },

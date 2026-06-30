@@ -2,7 +2,7 @@
   <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title">
     <header class="modal-header">
       <div>
-        <p class="eyebrow">Quản lý risk rule</p>
+        <p class="eyebrow">Quản lý mức độ rủi ro</p>
         <h2>{{ title }}</h2>
       </div>
       <button class="icon-button" type="button" aria-label="Đóng form" (click)="cancel.emit()">×</button>
@@ -11,25 +11,21 @@
     <form class="risk-rule-form" (ngSubmit)="submit()" #riskRuleForm="ngForm">
       <label class="full-span">
         Loại nông sản
-        <select
-          name="crop_type_id"
-          [(ngModel)]="form.crop_type_id"
-          [disabled]="isLoadingCropTypes || !cropTypes.length"
-          required
-        >
+        <select name="crop_type_id" [(ngModel)]="form.crop_type_id" [disabled]="isLoadingCropTypes || !cropTypes.length"
+          required>
           <option value="" disabled>
             {{ isLoadingCropTypes ? 'Đang tải loại nông sản...' : 'Chọn loại nông sản' }}
           </option>
           @for (cropType of cropTypes; track cropType.id) {
-            <option [value]="cropType.id">{{ cropType.name }} ({{ cropType.code }})</option>
+          <option [value]="cropType.id">{{ cropType.name }} ({{ cropType.code }})</option>
           }
         </select>
         @if (isLoadingCropTypes) {
-          <span class="field-note">Đang tải danh sách loại nông sản...</span>
+        <span class="field-note">Đang tải danh sách loại nông sản...</span>
         } @else if (cropTypesError) {
-          <span class="field-note error">{{ cropTypesError }}</span>
+        <span class="field-note error">{{ cropTypesError }}</span>
         } @else {
-          <span class="field-note">Chọn một loại nông sản cho quy tắc rủi ro.</span>
+        <span class="field-note">Chọn một loại nông sản cho quy tắc rủi ro.</span>
         }
       </label>
 

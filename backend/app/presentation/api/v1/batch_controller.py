@@ -111,7 +111,6 @@ async def regenerate_batch_qr(
 @router.get("/{batch_id}/qr-image")
 async def get_batch_qr_image(
     batch_id: str,
-    current_user: dict = Depends(get_current_user),
 ):
     async with get_async_session() as session:
         batch = await create_batch_service(session).regenerate_qr_code(batch_id)

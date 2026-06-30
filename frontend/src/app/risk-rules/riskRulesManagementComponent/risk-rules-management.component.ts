@@ -123,7 +123,7 @@ export class RiskRulesManagementComponent implements OnInit {
       next: () => {
         const isEdit = !!this.editingRiskRule;
         this.closeForm();
-        this.showToast(isEdit ? 'Cập nhật risk rule thành công.' : 'Tạo mới risk rule thành công.');
+        this.showToast(isEdit ? 'Cập nhật mức độ rủi ro thành công.' : 'Tạo mới mức độ rủi ro thành công.');
         this.loadRiskRules();
       },
       error: (error: HttpErrorResponse) => this.showToast(this.getErrorMessage(error), 'error'),
@@ -139,7 +139,7 @@ export class RiskRulesManagementComponent implements OnInit {
     this.riskRulesService.deleteRiskRule(this.deletingRiskRule.id).subscribe({
       next: () => {
         this.deletingRiskRule = null;
-        this.showToast(`Đã xóa risk rule của "${cropTypeName}".`);
+        this.showToast(`Đã xóa mức độ rủi ro của "${cropTypeName}".`);
         this.loadRiskRules();
       },
       error: (error: HttpErrorResponse) => this.showToast(this.getErrorMessage(error), 'error'),
@@ -180,7 +180,7 @@ export class RiskRulesManagementComponent implements OnInit {
     const detail = error.error?.detail;
     return typeof detail === 'string'
       ? detail
-      : 'Không thể xử lý dữ liệu risk rule. Hãy kiểm tra API backend và cơ sở dữ liệu.';
+      : 'Không thể xử lý dữ liệu mức độ rủi ro. Hãy kiểm tra API backend và cơ sở dữ liệu.';
   }
 
   private getCropTypeErrorMessage(error: HttpErrorResponse): string {
