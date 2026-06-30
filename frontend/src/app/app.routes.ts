@@ -18,7 +18,7 @@ export const routes: Routes = [
   { path: 'farms', component: FarmsManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
   { path: 'crop-types', component: CropTypesManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
   { path: 'chemicals', component: ChemicalsManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
-  { path: 'batches', component: BatchesManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1, 2, 3] } },
+  { path: 'batches', component: BatchesManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1, 2] } },
   { path: 'risk-rules', component: RiskRulesManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
   { path: 'traceability/:batch_id/public', component: TraceComponent },
   { path: 'containers', component: ContainersManagementComponent, canActivate: [roleGuard], data: { roles: [0, 2] } },
