@@ -183,4 +183,13 @@ export class TraceComponent implements OnInit {
     if (!h) return '—';
     return h.length > len ? h.slice(0, len) + '…' : h;
   }
+
+  get blockchainUrl(): string {
+    return `http://localhost:8000/blockchain/hash/${this.batchId}`;
+  }
+
+  get qrCodeUrl(): string {
+    const data = encodeURIComponent(this.blockchainUrl);
+    return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${data}`;
+  }
 }
