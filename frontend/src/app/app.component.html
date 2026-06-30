@@ -14,23 +14,6 @@
         </div>
       </nav>
 
-<<<<<<< HEAD
-      <div class="hero-grid">
-        <section class="intro">
-          <p class="eyebrow">Truy xuất nguồn gốc chủ động</p>
-          <h1>{{ title }}</h1>
-          <p class="lead">
-            Quản lý nông trại, lô nông sản, vận chuyển, cảm biến IoT và xác minh
-            blockchain trong một luồng dữ liệu minh bạch.
-          </p>
-
-          <div class="flow-strip" aria-label="Luồng truy xuất">
-            <span>Nông trại</span>
-            <span>Lô sản phẩm</span>
-            <span>Cảm biến IoT</span>
-            <span>Blockchain hash</span>
-            <span>QR công khai</span>
-=======
       <section class="auth-panel" aria-label="Bảng xác thực">
         <div class="auth-header">
           <div>
@@ -44,50 +27,8 @@
             <button type="button" [class.active]="authMode === 'register'" (click)="setAuthMode('register')">
               Đăng ký
             </button>
->>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
           </div>
 
-<<<<<<< HEAD
-          <div class="metric-grid">
-            <article>
-              <strong>SQL Server</strong>
-              <span>Người dùng, nông trại, lô hàng, vận chuyển</span>
-            </article>
-            <article>
-              <strong>MongoDB</strong>
-              <span>Nhật ký cảm biến theo thời gian</span>
-            </article>
-            <article>
-              <strong>Redis Queue</strong>
-              <span>Xử lý cảm biến và tác vụ blockchain</span>
-            </article>
-          </div>
-        </section>
-
-        <section class="auth-panel" aria-label="Bảng xác thực">
-          <div class="auth-header">
-            <div>
-              <p class="eyebrow">Tài khoản hệ thống</p>
-              <h2>{{ authMode === 'login' ? 'Đăng nhập' : 'Đăng ký' }}</h2>
-            </div>
-            <div class="mode-toggle">
-              <button type="button" [class.active]="authMode === 'login'" (click)="setAuthMode('login')">
-                Đăng nhập
-              </button>
-              <button type="button" [class.active]="authMode === 'register'" (click)="setAuthMode('register')">
-                Đăng ký
-              </button>
-            </div>
-          </div>
-
-          <form class="auth-form" (ngSubmit)="submitAuth()" #authForm="ngForm">
-            @if (authMode === 'register') {
-              <label>
-                Họ và tên
-                <input name="full_name" type="text" [(ngModel)]="form.full_name" required />
-              </label>
-            }
-=======
         <div class="auth-form-stage" [class.register-mode]="authMode === 'register'">
           <form
             class="auth-form auth-form-login"
@@ -193,7 +134,6 @@
             </button>
           </form>
         </div>
->>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
 
             <label>
               Email
@@ -259,13 +199,7 @@
     </section>
   </main>
 } @else {
-<<<<<<< HEAD
-  <app-dashboard [authMessage]="authMessage" (logoutRequested)="logout()">
-    <router-outlet />
-  </app-dashboard>
-=======
 <app-dashboard [authMessage]="authMessage" (logoutRequested)="logout()">
   <router-outlet />
 </app-dashboard>
->>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
 }

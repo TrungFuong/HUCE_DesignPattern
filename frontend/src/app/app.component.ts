@@ -1,11 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-<<<<<<< HEAD
-import { Router, RouterOutlet } from '@angular/router';
-=======
-import { Router, RouterOutlet } from '@angular/router';  // ← thêm Router
->>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
+import { Router, RouterOutlet } from '@angular/router'; 
 import { AuthMode, AuthResponse, AuthService } from './auth.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { defaultPathForRole } from './role.guard';
@@ -33,13 +29,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-<<<<<<< HEAD
-    if (!this.token) {
-      if (!this.isTracePage) {
-        void this.router.navigateByUrl('/');
-      }
-      return;
-=======
     if (!this.token && !this.isTracePage) {
       this.router.navigate(['/']);
     } else if (this.token) {
@@ -54,7 +43,6 @@ export class AppComponent implements OnInit {
           this.router.navigate(['/']);
         }
       });
->>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
     }
 
     this.authService.ensureCurrentUser().subscribe((user) => {
@@ -87,12 +75,6 @@ export class AppComponent implements OnInit {
     role: 1,
   };
 
-<<<<<<< HEAD
-  setAuthMode(mode: AuthMode): void {
-    this.authMode = mode;
-    this.authError = '';
-    this.authMessage = '';
-=======
   readonly registerForm = {
     full_name: '',
     email: '',
@@ -109,7 +91,6 @@ export class AppComponent implements OnInit {
     this.authError = '';
     this.authMessage = '';
     this.isSubmitting = false;
->>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
   }
 
   submitAuth(): void {

@@ -86,23 +86,12 @@ export class FarmsManagementComponent implements OnInit {
   }
 
   loadFarmers(): void {
-<<<<<<< HEAD
-    this.isLoadingFarmers = true;
-    this.farmersError = '';
-    if (this.isFarmer) {
-      const currentUser = this.authService.getCurrentUser();
-      this.farmers = currentUser ? [currentUser] : [];
-      this.isLoadingFarmers = false;
-      return;
-    }
-=======
     const currentUser = this.authService.getCurrentUser();
     if (this.isFarmer && currentUser) {
       this.farmers = [currentUser];
       return;
     }
 
->>>>>>> d89c627d97b7aff05863d4f6aa41fd754b888870
     this.usersService.getFarmers().subscribe({
       next: (farmers) => {
         this.farmers = farmers.filter((farmer) => farmer.is_active);
