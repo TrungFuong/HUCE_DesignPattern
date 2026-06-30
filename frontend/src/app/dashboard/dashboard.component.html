@@ -19,7 +19,12 @@
     </nav>
 
     <div class="bottom-actions">
-      <button class="profile-button" type="button" routerLink="/profile" routerLinkActive="active">
+      <button
+        class="profile-button"
+        type="button"
+        routerLink="/profile"
+        routerLinkActive="active"
+      >
         <span aria-hidden="true">👤</span>
         Thông tin cá nhân
       </button>
@@ -32,7 +37,6 @@
   </aside>
 
   <section class="main-content">
-
     @if (authMessage) {
       <p class="notice success dashboard-notice">{{ authMessage }}</p>
     }

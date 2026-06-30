@@ -112,14 +112,14 @@
       <section class="chart-panel">
         <header>
           <p class="eyebrow">Chart</p>
-          <h3>Tiến độ vận chuyển</h3>
+          <h3>Phân bổ trạng thái vận chuyển</h3>
         </header>
         <div class="bar-chart">
-          @for (item of shipmentProgressChartItems; track item.label) {
+          @for (item of shipmentStatusChartItems; track item.label) {
             <article>
               <div class="bar-label">
                 <span>{{ item.label }}</span>
-                <strong>{{ item.value }}%</strong>
+                <strong>{{ item.value }}</strong>
               </div>
               <div class="bar-track">
                 <span
@@ -128,6 +128,8 @@
                 ></span>
               </div>
             </article>
+          } @empty {
+            <p class="empty-note">Chưa có dữ liệu vận chuyển</p>
           }
         </div>
       </section>
@@ -226,7 +228,7 @@
       <section class="stat-section">
         <header>
           <p class="eyebrow">Vận chuyển</p>
-          <h3>Thống kê chuyến mẫu</h3>
+          <h3>Thống kê chuyến</h3>
         </header>
         <div class="table-wrap">
           <table>
@@ -254,7 +256,7 @@
 
       <section class="stat-section">
         <header>
-          <p class="eyebrow">Fake data</p>
+          <p class="eyebrow">Vận chuyển</p>
           <h3>Chuyến vận chuyển</h3>
         </header>
         <div class="table-wrap">
@@ -264,18 +266,32 @@
                 <th>Mã chuyến</th>
                 <th>Tuyến</th>
                 <th>Trạng thái</th>
-                <th>Tiến độ</th>
+                <th>Số lô</th>
+                <th>Thời gian bắt đầu</th>
+                <th>Thời gian kết thúc</th>
               </tr>
             </thead>
             <tbody>
-              @for (shipment of fakeShipments; track shipment.code) {
+              @for (shipment of shipmentTableRows; track shipment.code) {
                 <tr>
                   <td>
                     <strong>{{ shipment.code }}</strong>
                   </td>
                   <td>{{ shipment.route }}</td>
                   <td>{{ shipment.status }}</td>
-                  <td>{{ shipment.progress }}%</td>
+                  <td>{{ shipment.items }}</td>
+                  <td>{{ shipment.startTime | date: "dd/MM/yyyy" }}</td>
+                  <td>
+                    {{
+                      shipment.endTime === "Chưa hoàn tất"
+                        ? shipment.endTime
+                        : (shipment.endTime | date: "dd/MM/yyyy")
+                    }}
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6">Chưa có chuyến vận chuyển nào</td>
                 </tr>
               }
             </tbody>

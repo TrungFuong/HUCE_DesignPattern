@@ -8,6 +8,8 @@ import { CropType } from '../../crop-types/crop-type.model';
 import { CropTypesService } from '../../crop-types/crop-types.service';
 import { Farm } from '../../farms/farm.model';
 import { FarmsService } from '../../farms/farms.service';
+import { Shipment } from '../../shipments/shipment.model';
+import { ShipmentsService } from '../../shipments/shipments.service';
 
 interface DashboardCard {
   label: string;
@@ -27,14 +29,6 @@ interface ChartItem {
   percent: number;
 }
 
-interface FakeShipment {
-  code: string;
-  route: string;
-  status: 'Đang giao' | 'Chờ bàn giao' | 'Hoàn tất';
-  batches: number;
-  progress: number;
-}
-
 @Component({
   selector: 'app-dashboard-overview',
   standalone: true,
@@ -46,21 +40,17 @@ export class DashboardOverviewComponent implements OnInit {
   private readonly farmsService = inject(FarmsService);
   private readonly batchesService = inject(BatchesService);
   private readonly cropTypesService = inject(CropTypesService);
+  private readonly shipmentsService = inject(ShipmentsService);
 
   farms: Farm[] = [];
   batches: Batch[] = [];
   cropTypes: CropType[] = [];
+  shipments: Shipment[] = [];
   isLoading = false;
   errorMessage = '';
   showAtRiskModal = false;
   atRiskCurrentPage = 1;
   readonly atRiskPageSize = 5;
-
-  readonly fakeShipments: FakeShipment[] = [
-    { code: 'VC-2026-001', route: 'Hà Nội -> Hải Phòng', status: 'Đang giao', batches: 4, progress: 68 },
-    { code: 'VC-2026-002', route: 'Nghệ An -> Đà Nẵng', status: 'Chờ bàn giao', batches: 3, progress: 42 },
-    { code: 'VC-2026-003', route: 'Lâm Đồng -> TP.HCM', status: 'Hoàn tất', batches: 6, progress: 100 },
-  ];
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -191,25 +181,49 @@ export class DashboardOverviewComponent implements OnInit {
     ]);
   }
 
-  get shipmentProgressChartItems(): ChartItem[] {
-    return this.fakeShipments.map((shipment) => ({
-      label: shipment.code,
-      value: shipment.progress,
-      percent: shipment.progress,
-    }));
+  get shipmentStatusChartItems(): ChartItem[] {
+    return this.toChartItems(
+      [0, 1, 2, 3].map((status) => ({
+        label: this.getShipmentStatusLabel(status),
+        value: this.shipments.filter((shipment) => Number(shipment.status) === status).length,
+      }))
+    );
   }
 
   get shipmentStatisticRows(): StatisticRow[] {
-    const totalBatches = this.fakeShipments.reduce((sum, shipment) => sum + shipment.batches, 0);
-    const averageProgress = this.fakeShipments.length
-      ? Math.round(this.fakeShipments.reduce((sum, shipment) => sum + shipment.progress, 0) / this.fakeShipments.length)
-      : 0;
+    const totalItems = this.shipments.reduce((sum, shipment) => sum + (shipment.items?.length ?? 0), 0);
+    const inTransit = this.shipments.filter((shipment) => Number(shipment.status) === 1).length;
 
     return [
-      { label: 'Chuyến mẫu', value: String(this.fakeShipments.length), note: 'Tạm dùng fake data' },
-      { label: 'Lô đang vận chuyển', value: String(totalBatches), note: 'Tổng số lô trong các chuyến mẫu' },
-      { label: 'Tiến độ trung bình', value: `${averageProgress}%`, note: 'Ước tính theo progress fake' },
+      { label: 'Tổng chuyến vận chuyển', value: String(this.shipments.length), note: 'Dữ liệu lấy từ API vận chuyển' },
+      { label: 'Đang vận chuyển', value: String(inTransit), note: 'Số chuyến có trạng thái IN_TRANSIT' },
+      { label: 'Tổng lô trong các chuyến', value: String(totalItems), note: 'Cộng theo số item của mỗi chuyến' },
     ];
+  }
+
+  get shipmentTableRows(): Array<{ code: string; route: string; status: string; items: number; startTime: string; endTime: string }> {
+    return this.shipments.map((shipment) => ({
+      code: this.getShipmentCode(shipment),
+      route: `${shipment.origin} -> ${shipment.destination}`,
+      status: this.getShipmentStatusLabel(shipment.status),
+      items: shipment.items?.length ?? 0,
+      startTime: shipment.start_time,
+      endTime: shipment.end_time ?? 'Chưa hoàn tất',
+    }));
+  }
+
+  getShipmentCode(shipment: Shipment): string {
+    return `VC-${shipment.id.slice(0, 8).toUpperCase()}`;
+  }
+
+  getShipmentStatusLabel(status: number | string): string {
+    const labels: Record<number, string> = {
+      0: 'Mới tạo',
+      1: 'Đang vận chuyển',
+      2: 'Đã giao',
+      3: 'Đã hủy',
+    };
+    return labels[Number(status)] ?? `Trạng thái ${status}`;
   }
 
   get readyForHarvestFarms(): number {
@@ -232,11 +246,13 @@ export class DashboardOverviewComponent implements OnInit {
       farms: this.farmsService.getFarms(),
       batches: this.batchesService.getBatches(),
       cropTypes: this.cropTypesService.getCropTypes(),
+      shipments: this.shipmentsService.getShipments(),
     }).subscribe({
-      next: ({ farms, batches, cropTypes }) => {
+      next: ({ farms, batches, cropTypes, shipments }) => {
         this.farms = farms;
         this.batches = batches;
         this.cropTypes = cropTypes;
+        this.shipments = shipments;
         this.isLoading = false;
       },
       error: (error: HttpErrorResponse) => {
