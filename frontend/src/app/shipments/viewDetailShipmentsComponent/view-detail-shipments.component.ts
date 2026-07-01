@@ -36,7 +36,8 @@ export class ViewDetailShipmentsComponent {
   }
 
   getBatchLabel(batchId: string): string {
-    return batchId;
+    const batch = this.batches.find((currentBatch) => currentBatch.id === batchId);
+    return batch ? batch.product_name : batchId;
   }
 
   getContainerLabel(containerId: string): string {

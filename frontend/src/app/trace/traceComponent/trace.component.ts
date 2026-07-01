@@ -33,6 +33,12 @@ export class TraceComponent implements OnInit {
   loadTrace(): void {
     this.isLoading = true;
     this.errorMessage = '';
+
+    this.traceService.getBlockchainHash(this.batchId).subscribe({
+      next: (res) => console.log('Blockchain hash called:', res),
+      error: (err) => console.error('Blockchain hash call failed:', err)
+    });
+
     this.traceService.getPublicTrace(this.batchId).subscribe({
       next: (data) => {
         this.data = data;

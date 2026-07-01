@@ -14,6 +14,7 @@ import { roleGuard } from './role.guard';
 import { ChemicalsManagementComponent } from './chemicals/chemicalsManagementComponent/chemicals-management.component';
 
 export const routes: Routes = [
+<<<<<<< HEAD
   { path: '', component: DashboardOverviewComponent, title: 'Tổng quan', canActivate: [roleGuard], data: { roles: [0, 1] } },
   { path: 'farms', component: FarmsManagementComponent, title: 'Quản lý Nông trại', canActivate: [roleGuard], data: { roles: [0, 1] } },
   { path: 'crop-types', component: CropTypesManagementComponent, title: 'Quản lý Cây trồng', canActivate: [roleGuard], data: { roles: [0, 1] } },
@@ -26,6 +27,20 @@ export const routes: Routes = [
   { path: 'users', component: UsersManagementComponent, title: 'Quản lý Người dùng', canActivate: [roleGuard], data: { roles: [0] } },
   { path: 'profile', component: ProfileComponent, title: 'Hồ sơ cá nhân', canActivate: [roleGuard], data: { roles: [0, 1, 2, 3, 4] } },
   { path: 'sensors', component: SensorsPlaceholderComponent, title: 'Cảm biến', canActivate: [roleGuard], data: { roles: [0, 1] } },
+=======
+  { path: '', component: DashboardOverviewComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
+  { path: 'farms', component: FarmsManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
+  { path: 'crop-types', component: CropTypesManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
+  { path: 'chemicals', component: ChemicalsManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
+  { path: 'batches', component: BatchesManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1, 2] } },
+  { path: 'risk-rules', component: RiskRulesManagementComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
+  { path: 'traceability/:batch_id/public', component: TraceComponent },
+  { path: 'containers', component: ContainersManagementComponent, canActivate: [roleGuard], data: { roles: [0, 2] } },
+  { path: 'shipments', component: ShipmentsManagementComponent, canActivate: [roleGuard], data: { roles: [0, 2, 3] } },
+  { path: 'users', component: UsersManagementComponent, canActivate: [roleGuard], data: { roles: [0] } },
+  { path: 'profile', component: ProfileComponent, canActivate: [roleGuard], data: { roles: [0, 1, 2, 3, 4] } },
+  { path: 'sensors', component: SensorsPlaceholderComponent, canActivate: [roleGuard], data: { roles: [0, 1] } },
+>>>>>>> e29208936fe833c1dab2397a507e52f43d495de7
   { path: 'reports', redirectTo: '' },
   { path: '**', redirectTo: '' },
 ];
