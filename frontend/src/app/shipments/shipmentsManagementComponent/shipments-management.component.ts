@@ -66,10 +66,8 @@ export class ShipmentsManagementComponent implements OnInit {
   ngOnInit(): void {
     this.loadShipments();
     this.loadUsers();
-    if (!this.isReadOnly) {
-      this.loadBatches();
-      this.loadContainers();
-    }
+    this.loadBatches();
+    this.loadContainers();
   }
 
   get totalPages(): number {
