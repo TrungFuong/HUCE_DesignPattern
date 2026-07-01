@@ -22,7 +22,6 @@ export class AppComponent implements OnInit {
   authMessage = '';
   authError = '';
   token = this.authService.getToken();
-  authMode: AuthMode = 'login';
 
   get isTracePage(): boolean {
     return this.router.url.includes('/traceability/') && this.router.url.includes('/public');
@@ -47,37 +46,13 @@ export class AppComponent implements OnInit {
   }
 
   showLoginPassword = false;
-  showRegisterPassword = false;
-
-  readonly publicRoleOptions = [
-    { value: 1, label: 'Nông dân' },
-    { value: 2, label: 'Thương lái' },
-    { value: 3, label: 'Nhà phân phối' },
-    { value: 4, label: 'Người tiêu dùng' },
-  ];
 
   readonly form = {
     email: '',
     password: '',
   };
 
-  readonly registerForm = {
-    full_name: '',
-    email: '',
-    password: '',
-    role: 1,
-  };
 
-  setAuthMode(mode: AuthMode): void {
-    if (this.authMode === mode) {
-      return;
-    }
-
-    this.authMode = mode;
-    this.authError = '';
-    this.authMessage = '';
-    this.isSubmitting = false;
-  }
 
   submitAuth(): void {
     this.authError = '';
@@ -95,29 +70,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  submitRegister(): void {
-    this.authError = '';
-    this.authMessage = '';
-    this.isSubmitting = true;
 
-    this.authService.register({
-      full_name: this.registerForm.full_name.trim(),
-      email: this.registerForm.email.trim(),
-      password: this.registerForm.password,
-      role: Number(this.registerForm.role),
-    }).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.authMessage = 'Đăng ký thành công. Vui lòng đăng nhập để tiếp tục.';
-        this.authMode = 'login';
-        this.registerForm.full_name = '';
-        this.registerForm.email = '';
-        this.registerForm.password = '';
-        this.registerForm.role = 1;
-      },
-      error: (error: HttpErrorResponse) => this.handleAuthError(error),
-    });
-  }
 
   logout(): void {
     this.authService.logout();
